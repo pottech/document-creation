@@ -29,6 +29,7 @@
 	},
 	"dependencies": {
 		"arctic": "^3.7.0",
+		"dbdocs": "^1.0.0",
 		"drizzle-orm": "^0.45.1",
 		"postgres": "^3.4.7"
 	}

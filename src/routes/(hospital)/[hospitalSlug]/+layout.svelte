@@ -30,6 +30,12 @@
 				>
 					メンバー管理
 				</a>
+				<a
+					href="{basePath}/settings"
+					class:active={currentPath.startsWith(`${basePath}/settings`)}
+				>
+					設定
+				</a>
 			{/if}
 		</div>
 

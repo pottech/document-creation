@@ -21,6 +21,10 @@
 			<a href="/admin/hospitals" class:active={$page.url.pathname.startsWith('/admin/hospitals')}
 				>病院管理</a
 			>
+			<a
+				href="/admin/api-clients"
+				class:active={$page.url.pathname.startsWith('/admin/api-clients')}>APIクライアント</a
+			>
 		</div>
 
 		<form method="POST" action="/auth/logout" class="logout-form">

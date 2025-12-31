@@ -7,3 +7,6 @@ export * from './hospital-groups';
 export * from './hospitals';
 export * from './hospital-memberships';
 export * from './invitations';
+
+// API schemas
+export * from './api-clients';

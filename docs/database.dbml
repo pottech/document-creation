@@ -1,0 +1,169 @@
+// Document Creation System - Database Schema
+// Generated for dbdocs
+
+Project document_creation {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Document Creation System
+
+    病院向け文書作成システムのデータベーススキーマ
+
+    ## アカウント構造
+    - サービス管理者: システム全体を管理
+    - 病院アカウント: 各病院の管理単位
+    - 病院管理者: 病院内のユーザー管理
+    - 病院ユーザー: 一般ユーザー
+  '''
+}
+
+// ===================
+// Enums
+// ===================
+
+Enum hospital_role {
+  hospital_admin [note: '病院管理者 - 病院内のユーザー管理が可能']
+  hospital_user [note: '病院ユーザー - 一般ユーザー']
+}
+
+// ===================
+// Tables
+// ===================
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'ユーザーID']
+  keycloak_id varchar(255) [unique, note: 'Keycloak ユーザーID']
+  email varchar(255) [not null, unique, note: 'メールアドレス']
+  name varchar(255) [not null, note: '表示名']
+  is_service_admin boolean [not null, default: false, note: 'サービス管理者フラグ']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  Note: '''
+    ユーザーテーブル
+    - Keycloakと連携して認証を行う
+    - is_service_admin=true のユーザーはシステム全体を管理可能
+  '''
+}
+
+Table sessions {
+  id varchar(64) [pk, note: 'セッションID（ランダム生成）']
+  user_id uuid [not null, ref: > users.id, note: 'ユーザーID']
+  current_hospital_id uuid [ref: > hospitals.id, note: '現在選択中の病院ID']
+  access_token text [not null, note: 'Keycloak アクセストークン']
+  refresh_token text [note: 'Keycloak リフレッシュトークン']
+  access_token_expires_at timestamptz [not null, note: 'アクセストークン有効期限']
+  expires_at timestamptz [not null, note: 'セッション有効期限']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+
+  Note: '''
+    セッションテーブル
+    - Keycloakトークンを保持
+    - 24時間で有効期限切れ
+    - current_hospital_id で現在のコンテキストを管理
+  '''
+}
+
+Table hospital_groups {
+  id uuid [pk, default: `gen_random_uuid()`, note: '病院グループID']
+  name varchar(255) [not null, note: 'グループ名']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  Note: '''
+    病院グループテーブル（将来用）
+    - 複数の病院をグループ化して管理
+  '''
+}
+
+Table hospitals {
+  id uuid [pk, default: `gen_random_uuid()`, note: '病院ID']
+  name varchar(255) [not null, note: '病院名']
+  slug varchar(100) [not null, unique, note: 'URL用スラッグ']
+  hospital_group_id uuid [ref: > hospital_groups.id, note: '所属グループID']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  Note: '''
+    病院テーブル
+    - slugはURLパスに使用（例: /tokyo-hospital）
+    - サービス管理者が作成・管理
+  '''
+}
+
+Table hospital_memberships {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'メンバーシップID']
+  user_id uuid [not null, ref: > users.id, note: 'ユーザーID']
+  hospital_id uuid [not null, ref: > hospitals.id, note: '病院ID']
+  role hospital_role [not null, default: 'hospital_user', note: '役割']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+
+  indexes {
+    (user_id, hospital_id) [unique, note: '1ユーザー1病院につき1メンバーシップ']
+  }
+
+  Note: '''
+    病院メンバーシップテーブル
+    - ユーザーと病院の多対多関係を管理
+    - 1ユーザーが複数の病院に所属可能
+    - roleで権限を管理
+  '''
+}
+
+Table invitations {
+  id uuid [pk, default: `gen_random_uuid()`, note: '招待ID']
+  email varchar(255) [not null, note: '招待先メールアドレス']
+  hospital_id uuid [not null, ref: > hospitals.id, note: '招待先病院ID']
+  role hospital_role [not null, default: 'hospital_user', note: '付与する役割']
+  invited_by uuid [not null, ref: > users.id, note: '招待者ユーザーID']
+  token varchar(64) [not null, unique, note: '招待トークン']
+  expires_at timestamptz [not null, note: '有効期限']
+  accepted_at timestamptz [note: '受諾日時']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+
+  Note: '''
+    招待テーブル
+    - メールで招待リンクを送信
+    - tokenはURLに含まれる一意の識別子
+    - accepted_atがnullの場合は未受諾
+  '''
+}
+
+Table api_clients {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'APIクライアントID']
+  hospital_id uuid [ref: > hospitals.id, note: '紐づく病院ID（nullの場合はシステム全体）']
+  keycloak_client_id varchar(255) [not null, unique, note: 'KeycloakクライアントID']
+  name varchar(255) [not null, note: 'クライアント名']
+  description text [note: '説明']
+  is_enabled boolean [not null, default: true, note: '有効フラグ']
+  created_by uuid [not null, ref: > users.id, note: '作成者']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  Note: '''
+    APIクライアントテーブル
+    - 外部システム連携用のOAuth2クライアント
+    - Keycloakで動的に作成・管理
+    - hospital_id がnullの場合はシステム全体スコープ
+    - hospital_id が設定されている場合は病院単位スコープ
+  '''
+}
+
+// ===================
+// Table Groups
+// ===================
+
+TableGroup auth {
+  users
+  sessions
+}
+
+TableGroup hospital_management {
+  hospital_groups
+  hospitals
+  hospital_memberships
+  invitations
+}
+
+TableGroup external_api {
+  api_clients
+}
