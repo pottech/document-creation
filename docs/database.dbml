@@ -168,6 +168,10 @@ TableGroup external_api {
   api_clients
 }
 
+TableGroup audit {
+  audit_logs
+}
+
 TableGroup care_plan_management {
   patients
   care_plans
@@ -373,5 +377,85 @@ Table care_plan_templates {
     - 疾患別・患者属性別のテンプレート
     - 標準テンプレートを病院別に提供
     - template_data にデフォルト値を格納
+  '''
+}
+
+// ===================
+// Audit Tables
+// ===================
+
+Enum audit_action {
+  care_plan_create [note: '療養計画書作成']
+  care_plan_update [note: '療養計画書編集']
+  care_plan_view [note: '療養計画書閲覧']
+  care_plan_delete [note: '療養計画書削除']
+  care_plan_pdf [note: 'PDF出力']
+  care_plan_sign [note: '署名']
+  patient_create [note: '患者登録']
+  patient_update [note: '患者情報編集']
+  patient_view [note: '患者情報閲覧']
+  patient_delete [note: '患者削除']
+  auth_login [note: 'ログイン']
+  auth_logout [note: 'ログアウト']
+  user_create [note: 'ユーザー作成']
+  user_update [note: 'ユーザー編集']
+  hospital_create [note: '病院作成']
+  hospital_update [note: '病院編集']
+}
+
+Enum target_type {
+  care_plan [note: '療養計画書']
+  patient [note: '患者']
+  user [note: 'ユーザー']
+  hospital [note: '病院']
+  session [note: 'セッション']
+}
+
+Table audit_logs {
+  id uuid [pk, default: `gen_random_uuid()`, note: '監査ログID']
+
+  // 操作者
+  user_id uuid [not null, ref: > users.id, note: '操作者ユーザーID']
+  user_name varchar(100) [not null, note: '操作者名（履歴保持用）']
+
+  // 病院コンテキスト
+  hospital_id uuid [ref: > hospitals.id, note: '病院ID']
+  hospital_name varchar(200) [note: '病院名（履歴保持用）']
+
+  // 操作内容
+  action varchar(50) [not null, note: '操作種別']
+  target_type varchar(50) [not null, note: '対象リソース種別']
+  target_id uuid [note: '対象リソースID']
+  target_name varchar(200) [note: '対象リソース名']
+
+  // 変更内容
+  changes jsonb [note: '変更内容（before/after）']
+  metadata jsonb [note: 'その他メタデータ']
+
+  // クライアント情報
+  ip_address varchar(45) [note: 'IPアドレス']
+  user_agent text [note: 'User-Agent']
+
+  // 結果
+  success boolean [not null, default: true, note: '成功フラグ']
+  error_message text [note: 'エラーメッセージ']
+
+  // タイムスタンプ
+  created_at timestamptz [not null, default: `now()`, note: '操作日時']
+
+  indexes {
+    user_id [note: 'ユーザー別検索']
+    hospital_id [note: '病院別検索']
+    (target_type, target_id) [note: '対象リソース別検索']
+    action [note: '操作種別検索']
+    created_at [note: '日時検索']
+  }
+
+  Note: '''
+    監査ログテーブル
+    - 医療情報システムの真正性担保
+    - 誰が、いつ、何を、どのように操作したかを記録
+    - 変更前後の差分も保持
+    - クライアント情報（IP、UA）も記録
   '''
 }

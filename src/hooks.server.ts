@@ -16,6 +16,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.sessionId = null;
 	event.locals.apiClient = null;
 
+	// クライアント情報を取得（監査ログ用）
+	event.locals.clientInfo = {
+		ipAddress: event.getClientAddress(),
+		userAgent: event.request.headers.get('user-agent') || undefined
+	};
+
 	const pathname = event.url.pathname;
 
 	// Handle API v1 routes with Bearer token authentication

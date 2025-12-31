@@ -16,3 +16,6 @@ export * from './patients';
 export * from './care-plans';
 export * from './care-plan-staffs';
 export * from './care-plan-templates';
+
+// Audit schemas
+export * from './audit-logs';

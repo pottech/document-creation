@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { getCarePlanById } from '$lib/server/repositories/care-plans';
 import { getPatientById, isPatientInHospital } from '$lib/server/repositories/patients';
 import { generateCarePlanPdf, type CarePlanPdfData } from '$lib/server/services/pdf-generator';
+import { logAudit } from '$lib/server/services/audit-service';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -123,6 +124,26 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 
 	// PDF生成
 	const pdfBytes = await generateCarePlanPdf(pdfData);
+
+	// PDF出力の監査ログを記録
+	await logAudit({
+		userId: locals.user.id,
+		userName: locals.user.name || locals.user.email,
+		hospitalId: hospital.id,
+		hospitalName: hospital.name,
+		action: 'care_plan.pdf',
+		targetType: 'care_plan',
+		targetId: carePlan.id,
+		targetName: `${patient.name} - 療養計画書 #${carePlan.sequenceNumber}`,
+		metadata: {
+			patientId: patient.id,
+			patientName: patient.name,
+			patientNumber: patient.patientNumber,
+			consultationDate: carePlan.consultationDate
+		},
+		ipAddress: locals.clientInfo.ipAddress,
+		userAgent: locals.clientInfo.userAgent
+	});
 
 	// ファイル名生成
 	const fileName = `療養計画書_${patient.patientNumber}_${carePlan.consultationDate}.pdf`;

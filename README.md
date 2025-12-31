@@ -6,6 +6,7 @@
 
 - [システム構成](#システム構成)
 - [技術スタック](#技術スタック)
+- [主な機能](#主な機能)
 - [開発環境構築](#開発環境構築)
 - [Dockerコンテナ](#dockerコンテナ)
 - [認証・認可](#認証認可)
@@ -14,6 +15,7 @@
 - [ディレクトリ構成](#ディレクトリ構成)
 - [データベーススキーマ](#データベーススキーマ)
 - [ドキュメント](#ドキュメント)
+- [Next.js移行について](#nextjs移行について)
 
 ---
 
@@ -83,6 +85,39 @@
 | ビルドツール | Vite | 7.x |
 | 言語 | TypeScript | strict mode |
 | パッケージマネージャ | pnpm | - |
+
+---
+
+## 主な機能
+
+### 療養計画書管理
+- 生活習慣病療養計画書（様式9・9の2）の作成・編集
+- 初回用・継続用の両様式に対応
+- 対象疾患: 糖尿病、高血圧症、高脂血症
+- 検査項目、問診、目標設定、重点指導項目の入力
+- PDF出力（日本語フォント対応）
+
+### 患者管理
+- 患者基本情報の登録・編集
+- 患者番号による検索
+- 療養計画書履歴の閲覧
+
+### マルチテナント
+- 複数病院のデータ分離
+- ユーザーの複数病院所属対応
+- 病院管理者による招待機能
+
+### 外部API連携
+- OAuth2 Client Credentials Flowによる認証
+- APIクライアントの動的作成・管理
+- 病院スコープ/システム全体スコープ
+
+### 監査ログ
+- 全操作の履歴記録（真正性担保）
+- IPアドレス、User-Agent記録
+- フィルタリング・検索機能
+
+詳細: `docs/specification.md`
 
 ---
 
@@ -459,14 +494,36 @@ src/
 
 ## ドキュメント
 
+### システム仕様
+
+| ファイル | 内容 |
+|---------|------|
+| `docs/specification.md` | **システム仕様書**（全体概要、機能仕様、ルート構成） |
+| `docs/database.dbml` | DBスキーマ（DBML形式、全テーブル定義） |
+| `docs/ui-screens.md` | 画面仕様書（各画面の構成要素、フォーム定義） |
+| `docs/api-authentication.md` | 外部API認証ガイド |
+
+### 技術ドキュメント
+
 | ファイル | 内容 |
 |---------|------|
 | `docs/system-architecture.drawio` | システム構成図（draw.io形式） |
-| `docs/database.dbml` | DBスキーマ（DBML形式） |
-| `docs/api-authentication.md` | 外部API認証ガイド |
 | `docs/fhir-integration-plan.md` | FHIR統合計画 |
 | `docs/fhir-resource-mapping.md` | FHIRリソースマッピング設計 |
+| `docs/audit-log-plan.md` | 監査ログ実装計画 |
+
+### 移行ガイド
+
+| ファイル | 内容 |
+|---------|------|
+| `docs/nextjs-migration.md` | **Next.js移行ガイド**（対応関係、実装例） |
+
+### その他
+
+| ファイル | 内容 |
+|---------|------|
 | `CLAUDE.md` | Claude Code用プロジェクト情報 |
+| `docs/document-requirement/` | 要件定義ドキュメント（PDF） |
 
 ---
 
@@ -500,5 +557,47 @@ docker-compose logs -f hapi-fhir
 # ヘルスチェック
 curl http://localhost:8090/fhir/metadata
 ```
+
+---
+
+## Next.js移行について
+
+本プロジェクトはSvelteKit 2で実装されていますが、Next.js App Routerへの移行を想定した設計になっています。
+
+### 移行のポイント
+
+| SvelteKit | Next.js |
+|-----------|---------|
+| +page.svelte | page.tsx |
+| +page.server.ts (load) | Server Component |
+| +page.server.ts (actions) | Server Actions |
+| hooks.server.ts | middleware.ts |
+| Arctic (OIDC) | Auth.js (NextAuth) |
+| Drizzle ORM | Drizzle ORM（そのまま利用可） |
+| pdfme | pdfme（そのまま利用可） |
+
+### 移行用ドキュメント
+
+1. **`docs/specification.md`** - システム全体の仕様書
+2. **`docs/database.dbml`** - データベーススキーマ定義
+3. **`docs/ui-screens.md`** - 画面仕様書
+4. **`docs/nextjs-migration.md`** - Next.js移行ガイド（コード例付き）
+
+### 移行手順の概要
+
+```bash
+# 1. Next.jsプロジェクト作成
+npx create-next-app@latest --typescript --tailwind --app
+
+# 2. Drizzle ORMスキーマをコピー
+cp -r src/lib/server/db/schema new-project/src/lib/db/
+
+# 3. docker-compose.ymlをコピー
+cp docker-compose.yml new-project/
+
+# 4. 仕様書を参照して各画面を実装
+```
+
+詳細は `docs/nextjs-migration.md` を参照してください。
 
 ---

@@ -10,6 +10,7 @@ import {
 	setCarePlanStaffs,
 	type CreateCarePlanParams
 } from '$lib/server/repositories/care-plans';
+import { logAudit } from '$lib/server/services/audit-service';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params, parent, locals }) => {
@@ -83,6 +84,12 @@ export const actions: Actions = {
 
 		const isInHospital = await isPatientInHospital(params.patientId, hospital.id);
 		if (!isInHospital) {
+			return fail(404, { error: '患者が見つかりません' });
+		}
+
+		// 監査ログ用に患者情報を取得
+		const patient = await getPatientById(params.patientId);
+		if (!patient) {
 			return fail(404, { error: '患者が見つかりません' });
 		}
 
@@ -310,6 +317,28 @@ export const actions: Actions = {
 			if (staffEntries.length > 0) {
 				await setCarePlanStaffs(carePlan.id, staffEntries);
 			}
+
+			// 監査ログを記録
+			await logAudit({
+				userId: locals.user.id,
+				userName: locals.user.name || locals.user.email,
+				hospitalId: hospital.id,
+				hospitalName: hospital.name,
+				action: 'care_plan.create',
+				targetType: 'care_plan',
+				targetId: carePlan.id,
+				targetName: `${patient.name} - 療養計画書 #${sequenceNumber}`,
+				metadata: {
+					patientId: patient.id,
+					patientName: patient.name,
+					planType,
+					sequenceNumber,
+					recordDate,
+					consultationDate
+				},
+				ipAddress: locals.clientInfo.ipAddress,
+				userAgent: locals.clientInfo.userAgent
+			});
 
 			throw redirect(302, `/${params.hospitalSlug}/patients/${params.patientId}`);
 		} catch (e: unknown) {

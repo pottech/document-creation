@@ -8,6 +8,12 @@ interface ApiClientContext {
 	scopes: string[];
 }
 
+// Client info for audit logging
+interface ClientInfo {
+	ipAddress: string;
+	userAgent?: string;
+}
+
 declare global {
 	namespace App {
 		interface Error {
@@ -20,6 +26,7 @@ declare global {
 			membership: HospitalMembership | null;
 			sessionId: string | null;
 			apiClient: ApiClientContext | null;
+			clientInfo: ClientInfo;
 		}
 		interface PageData {
 			user: User | null;
