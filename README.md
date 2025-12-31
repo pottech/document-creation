@@ -1,186 +1,496 @@
-# README.md
+# Document Creation System
 
-このシステムは、医療機関向けの文書作成ツールの公開サンプル版です。
-Svelteを利用して作成してあります。
+医療機関向け文書作成システムのサンプル実装です。SvelteKit 2 + Svelte 5 で構築され、Keycloakによる認証、PostgreSQLによるデータ永続化、HAPI FHIRによる医療情報連携を提供します。
 
-システム構成図は、docsディレクトリ内のsystem-architecture.drawioなどを参照して下さい。
+## 目次
 
-## Development Commands
+- [システム構成](#システム構成)
+- [技術スタック](#技術スタック)
+- [開発環境構築](#開発環境構築)
+- [Dockerコンテナ](#dockerコンテナ)
+- [認証・認可](#認証認可)
+- [外部API連携](#外部api連携)
+- [アカウント構造](#アカウント構造)
+- [ディレクトリ構成](#ディレクトリ構成)
+- [データベーススキーマ](#データベーススキーマ)
+- [ドキュメント](#ドキュメント)
 
-```bash
-# Install dependencies
-pnpm install
+---
 
-# Start development server
-pnpm dev
+## システム構成
 
-# Build for production
-pnpm build
-
-# Type checking
-pnpm check
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                   クライアント                                    │
+│  ┌──────────────┐         ┌──────────────────┐                                   │
+│  │   ブラウザ    │         │ 外部医療システム  │                                   │
+│  │  (SSR/CSR)   │         │  (電子カルテ等)   │                                   │
+│  └──────┬───────┘         └────────┬─────────┘                                   │
+└─────────┼──────────────────────────┼────────────────────────────────────────────┘
+          │ HTTP/HTTPS               │ OAuth2 + REST API / FHIR
+          ▼                          ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              Docker Compose                                      │
+│                                                                                  │
+│  ┌────────────────────────────────────────────────────────────────────────────┐ │
+│  │                         SvelteKit Application                               │ │
+│  │                            (Port: 5173)                                     │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │ │
+│  │  │ フロントエンド │  │ バックエンド  │  │ Drizzle ORM │  │ Arctic OIDC │        │ │
+│  │  │  (SSR/CSR)  │  │  (Server)   │  │             │  │             │        │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘        │ │
+│  └────────────────────────────────────────────────────────────────────────────┘ │
+│         │                    │                     │                             │
+│         │ OIDC               │ SQL                 │ FHIR R4                     │
+│         ▼                    ▼                     ▼                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                       │
+│  │   Keycloak   │    │  PostgreSQL  │    │  HAPI FHIR   │                       │
+│  │  (Port:8080) │    │  (Port:5432) │    │  (Port:8090) │                       │
+│  │              │    │              │    │              │                       │
+│  │  - 認証/認可  │    │ - users      │    │ - HL7 FHIR   │                       │
+│  │  - ユーザー管理│    │ - hospitals  │    │   R4準拠     │                       │
+│  │  - OAuth2    │    │ - sessions   │    │ - JP Core    │                       │
+│  │  - OIDC      │    │ - api_clients│    │   対応可能    │                       │
+│  └──────────────┘    └──────────────┘    └──────────────┘                       │
+│                             │                                                    │
+│                             ▼                                                    │
+│                      ┌──────────────┐                                           │
+│                      │   Databases  │                                           │
+│                      │              │                                           │
+│                      │ - document_  │                                           │
+│                      │   creation   │                                           │
+│                      │ - keycloak   │                                           │
+│                      │ - hapi       │                                           │
+│                      └──────────────┘                                           │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Database Commands
+詳細なシステム構成図: `docs/system-architecture.drawio`
+
+---
+
+## 技術スタック
+
+| カテゴリ | 技術 | バージョン |
+|---------|------|-----------|
+| フレームワーク | SvelteKit | 2.x |
+| UIライブラリ | Svelte | 5.x |
+| ORM | Drizzle ORM | - |
+| データベース | PostgreSQL | 16 |
+| 認証 | Keycloak (OIDC) | 26.0 |
+| OIDCライブラリ | Arctic | - |
+| FHIRサーバー | HAPI FHIR | latest |
+| ビルドツール | Vite | 7.x |
+| 言語 | TypeScript | strict mode |
+| パッケージマネージャ | pnpm | - |
+
+---
+
+## 開発環境構築
+
+### 前提条件
+
+- **Node.js**: v20以上
+- **pnpm**: v8以上
+- **Docker / Docker Compose**: 最新版
+
+### セットアップ手順
+
+#### 1. リポジトリのクローン
 
 ```bash
-# Start PostgreSQL and Keycloak (Docker)
+git clone <repository-url>
+cd document-creation
+```
+
+#### 2. 依存パッケージのインストール
+
+```bash
+pnpm install
+```
+
+#### 3. 環境変数の設定
+
+```bash
+cp .env.example .env
+```
+
+#### 4. Dockerコンテナの起動
+
+```bash
+# PostgreSQL, Keycloak, HAPI FHIRを起動
+pnpm docker:up
+# または
+docker-compose up -d
+```
+
+#### 5. Keycloakの設定（初回のみ）
+
+1. **Keycloak管理コンソールにアクセス**
+   - URL: http://localhost:8080
+   - ユーザー名: `admin`
+   - パスワード: `admin`
+
+2. **Realmの作成**
+   - 左上のドロップダウン → "Create Realm"
+   - Realm name: `document-creation`
+   - "Create" をクリック
+
+3. **Clientの作成**
+   - 左メニュー "Clients" → "Create client"
+   - Client ID: `sveltekit-app`
+   - "Next" → Client authentication: **ON**
+   - "Next" → Valid redirect URIs: `http://localhost:5173/*`
+   - "Save"
+
+4. **Client Secretの取得**
+   - Clients → sveltekit-app → Credentials タブ
+   - Client secret をコピー
+
+5. **環境変数の更新**
+   ```bash
+   # .env ファイルを編集
+   KEYCLOAK_CLIENT_SECRET=<コピーしたClient Secret>
+   ```
+
+6. **テストユーザーの作成（任意）**
+   - Users → Add user
+   - Username, Email, First name, Last nameを入力
+   - "Create"
+   - Credentials タブ → Set password
+
+#### 6. データベースのセットアップ
+
+```bash
+# スキーマをデータベースに反映
+pnpm db:push
+```
+
+#### 7. 開発サーバーの起動
+
+```bash
+pnpm dev
+```
+
+アプリケーションは http://localhost:5173 でアクセス可能になります。
+
+### 開発用コマンド一覧
+
+```bash
+# 開発サーバー起動
+pnpm dev
+
+# 本番ビルド
+pnpm build
+
+# 型チェック
+pnpm check
+
+# Dockerコンテナ起動
 pnpm docker:up
 
-# Stop containers
+# Dockerコンテナ停止
 pnpm docker:down
 
-# Generate migrations from schema changes
+# DBマイグレーション生成
 pnpm db:generate
 
-# Apply migrations
+# DBマイグレーション適用
 pnpm db:migrate
 
-# Push schema directly (development only)
+# DBスキーマ直接反映（開発用）
 pnpm db:push
 
-# Open Drizzle Studio (DB GUI)
+# Drizzle Studio（DB GUI）
 pnpm db:studio
 ```
 
-## Tech Stack
+---
 
-- **Framework**: SvelteKit 2 with Svelte 5
-- **ORM**: Drizzle ORM with PostgreSQL
-- **Auth**: Keycloak (OIDC) with Arctic library
-- **Build Tool**: Vite 7
-- **Language**: TypeScript (strict mode)
-- **Package Manager**: pnpm
+## Dockerコンテナ
 
-## Architecture
+### コンテナ一覧
 
-### Account Structure
+| サービス | イメージ | ポート | 用途 |
+|---------|---------|--------|------|
+| postgres | postgres:16-alpine | 5432 | データベース |
+| keycloak | quay.io/keycloak/keycloak:26.0 | 8080 | 認証・認可 |
+| hapi-fhir | hapiproject/hapi:latest | 8090 | FHIRサーバー |
 
-```
-サービス管理者 (isServiceAdmin: true)
-    └── 病院アカウント (hospitals)
-            ├── 病院管理者 (hospital_admin) ← サービス管理者が招待
-            └── 病院ユーザー (hospital_user) ← 病院管理者が招待
-```
+### データベース
 
-- ユーザーは複数の病院に所属可能
-- hospital_groups テーブルで将来の病院グループ管理に対応
+PostgreSQL内に3つのデータベースが作成されます：
 
-### Route Groups
+| データベース | 用途 |
+|-------------|------|
+| document_creation | アプリケーションデータ |
+| keycloak | Keycloak設定・ユーザーデータ |
+| hapi | FHIRリソースデータ |
 
-```
-src/routes/
-├── (auth)/                 # 認証関連（未認証でもアクセス可）
-│   ├── login/              # Keycloakログイン
-│   ├── invite/[token]/     # 招待受諾
-│   └── no-hospital/        # 病院未所属時の表示
-├── (admin)/                # サービス管理者専用
-│   └── admin/
-│       ├── hospitals/      # 病院CRUD・招待
-│       └── api-clients/    # APIクライアント管理
-├── (hospital)/             # 病院コンテキスト
-│   └── [hospitalSlug]/     # 動的ルート（病院スラッグ）
-│       ├── +page           # ダッシュボード
-│       ├── members/        # メンバー管理・招待
-│       └── settings/       # 設定（APIクライアント等）
-├── api/v1/                 # 外部API（Bearer認証）
-│   ├── +server             # APIバージョン情報
-│   └── hospitals/          # 病院API
-└── auth/
-    ├── callback/           # OAuthコールバック
-    └── logout/             # ログアウト
-```
+### アクセス情報
 
-### Server-Side Structure
+| サービス | URL | 認証情報 |
+|---------|-----|---------|
+| SvelteKit | http://localhost:5173 | Keycloakログイン |
+| Keycloak管理コンソール | http://localhost:8080 | admin / admin |
+| HAPI FHIR | http://localhost:8090/fhir | なし（開発環境） |
+| Drizzle Studio | http://localhost:4983 | なし |
 
-```
-src/lib/server/
-├── auth/
-│   ├── keycloak.ts         # Keycloak OIDCクライアント
-│   ├── keycloak-admin.ts   # Keycloak Admin API
-│   ├── api-auth.ts         # 外部API認証（Bearer Token）
-│   ├── session.ts          # セッション管理
-│   ├── user-sync.ts        # ユーザー同期
-│   └── invitation.ts       # 招待トークン管理
-├── db/
-│   ├── index.ts            # DB接続
-│   └── schema/
-│       ├── users.ts        # ユーザー
-│       ├── sessions.ts     # セッション
-│       ├── hospitals.ts    # 病院
-│       ├── hospital-groups.ts    # 病院グループ（将来用）
-│       ├── hospital-memberships.ts  # ユーザー×病院
-│       ├── invitations.ts  # 招待
-│       └── api-clients.ts  # APIクライアント
-└── repositories/           # データアクセス層
-```
-
-### Database Schema
-
-- **users**: keycloakId, email, name, isServiceAdmin
-- **hospitals**: name, slug, hospitalGroupId
-- **hospital_memberships**: userId, hospitalId, role (hospital_admin | hospital_user)
-- **invitations**: email, hospitalId, role, token, expiresAt
-- **sessions**: userId, currentHospitalId, accessToken, refreshToken
-- **api_clients**: hospitalId, keycloakClientId, name, isEnabled, createdBy
-
-## Authentication Flow
-
-1. `/login` → Keycloak認証画面
-2. Keycloak認証成功 → `/auth/callback`
-3. ユーザー作成/更新 → セッション作成
-4. 招待があれば自動的にmembership作成
-5. ロールに応じてリダイレクト
-
-## Keycloak Setup
-
-1. `pnpm docker:up` でKeycloak起動
-2. http://localhost:8080 にアクセス (user: admin/pass: admin)
-3. Realm作成: `document-creation`
-4. Client作成: `sveltekit-app` (Client authentication: ON)
-5. Redirect URI: `http://localhost:5173/*`
-6. Client Secretを`.env`のKEYCLOAK_CLIENT_SECRETに設定
-
-## Svelte 5 Runes
-
-- `$props()` - コンポーネントprops
-- `$state()` - リアクティブ状態
-- `$derived()` - 派生値
-- `{@render children()}` - スロットコンテンツ
-
-## External API Authentication
-
-外部システム連携用のOAuth2 Client Credentials Flow認証を実装。
-
-### 概要
-
-- Keycloakで動的にクライアントを作成・管理
-- Bearer Token認証で`/api/v1/*`にアクセス
-- 病院単位またはシステム全体のスコープ設定
-
-### トークン取得方法
+### コンテナ管理
 
 ```bash
-# Keycloakからアクセストークンを取得
+# 起動
+docker-compose up -d
+
+# 停止
+docker-compose down
+
+# ログ確認
+docker-compose logs -f [service-name]
+
+# 完全リセット（データ削除）
+docker-compose down -v
+```
+
+---
+
+## 認証・認可
+
+### 認証フロー（ブラウザ）
+
+```
+1. ユーザー: /login にアクセス
+            ↓
+2. SvelteKit: Keycloak認証画面にリダイレクト
+            ↓
+3. Keycloak: ユーザー認証（ID/PW入力）
+            ↓
+4. Keycloak: /auth/callback にリダイレクト（認可コード付与）
+            ↓
+5. SvelteKit: 認可コード → アクセストークン交換
+            ↓
+6. SvelteKit: ユーザー情報取得・DB同期
+            ↓
+7. SvelteKit: セッション作成・Cookie設定
+            ↓
+8. SvelteKit: ロールに応じてリダイレクト
+   - サービス管理者 → /admin
+   - 病院ユーザー → /{hospitalSlug}
+```
+
+### 認証方式の使い分け
+
+| 用途 | 認証方式 | 実装箇所 |
+|------|---------|---------|
+| Webアプリ（ブラウザ） | Cookie + セッション | hooks.server.ts |
+| 外部API（M2M） | Bearer Token (OAuth2) | hooks.server.ts |
+
+### セッション管理
+
+- セッションIDはCookieに保存（`httpOnly`, `secure`）
+- セッション有効期限: 24時間
+- アクセストークンはDBに保存し、必要に応じてリフレッシュ
+
+### 権限レベル
+
+| 権限 | 説明 | アクセス可能エリア |
+|------|------|------------------|
+| サービス管理者 | システム全体を管理 | /admin/*, 全病院 |
+| 病院管理者 | 所属病院を管理 | /{slug}/*, メンバー招待 |
+| 病院ユーザー | 所属病院を利用 | /{slug}/* |
+
+---
+
+## 外部API連携
+
+### OAuth2 Client Credentials Flow
+
+外部システムからAPIにアクセスするための認証フロー。
+
+```
+外部システム                Keycloak                 Document Creation
+    │                         │                           │
+    │ 1. Client Credentials   │                           │
+    ├────────────────────────>│                           │
+    │ 2. Access Token         │                           │
+    │<────────────────────────┤                           │
+    │                         │                           │
+    │ 3. API Request + Bearer Token                       │
+    ├────────────────────────────────────────────────────>│
+    │                         │  4. Token Introspection   │
+    │                         │<──────────────────────────┤
+    │                         │  5. Token Valid           │
+    │                         │──────────────────────────>│
+    │ 6. API Response                                     │
+    │<────────────────────────────────────────────────────┤
+```
+
+### APIクライアント管理
+
+管理画面からAPIクライアントを作成・管理できます：
+- サービス管理者: `/admin/api-clients` （システム全体 or 病院単位）
+- 病院管理者: `/{slug}/settings/api-clients` （自病院のみ）
+
+### APIエンドポイント
+
+#### 独自REST API (`/api/v1/*`)
+
+```bash
+# トークン取得
 curl -X POST "http://localhost:8080/realms/document-creation/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials" \
   -d "client_id=YOUR_CLIENT_ID" \
   -d "client_secret=YOUR_CLIENT_SECRET"
-```
 
-### APIアクセス
-
-```bash
-# Bearer Token を使用してAPIにアクセス
+# API呼び出し
 curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   http://localhost:5173/api/v1/hospitals
 ```
 
-### エンドポイント
+| エンドポイント | メソッド | 説明 |
+|---------------|---------|------|
+| /api/v1/ | GET | API情報・クライアント情報 |
+| /api/v1/hospitals | GET | 病院一覧（スコープ内） |
+| /api/v1/hospitals/:id | GET | 病院詳細 |
 
-- `GET /api/v1/` - API情報・クライアント情報
-- `GET /api/v1/hospitals` - 病院一覧（スコープ内）
-- `GET /api/v1/hospitals/:id` - 病院詳細
+#### FHIR API (`/fhir/*` - HAPI FHIR経由)
 
-詳細は `docs/api-authentication.md` を参照。
+```bash
+# CapabilityStatement取得
+curl http://localhost:8090/fhir/metadata
+
+# Organization（病院）一覧
+curl http://localhost:8090/fhir/Organization
+```
+
+詳細: `docs/api-authentication.md`
+
+---
+
+## アカウント構造
+
+```
+サービス管理者 (isServiceAdmin: true)
+    │
+    │ 管理・招待
+    ▼
+病院アカウント (hospitals)
+    │
+    ├── 病院管理者 (hospital_admin) ← サービス管理者が招待
+    │       │
+    │       │ 招待
+    │       ▼
+    └── 病院ユーザー (hospital_user)
+```
+
+- ユーザーは複数の病院に所属可能
+- 病院グループによる複数病院の一括管理に対応予定
+
+---
+
+## ディレクトリ構成
+
+```
+src/
+├── routes/
+│   ├── (auth)/                 # 認証関連（未認証でもアクセス可）
+│   │   ├── login/              # Keycloakログイン
+│   │   ├── invite/[token]/     # 招待受諾
+│   │   └── no-hospital/        # 病院未所属時の表示
+│   ├── (admin)/                # サービス管理者専用
+│   │   └── admin/
+│   │       ├── hospitals/      # 病院CRUD・招待
+│   │       └── api-clients/    # APIクライアント管理
+│   ├── (hospital)/             # 病院コンテキスト
+│   │   └── [hospitalSlug]/
+│   │       ├── +page           # ダッシュボード
+│   │       ├── members/        # メンバー管理・招待
+│   │       └── settings/       # 設定（APIクライアント等）
+│   ├── api/v1/                 # 外部API
+│   │   ├── +server             # APIバージョン情報
+│   │   └── hospitals/          # 病院API
+│   └── auth/
+│       ├── callback/           # OAuthコールバック
+│       └── logout/             # ログアウト
+├── lib/
+│   ├── server/
+│   │   ├── auth/
+│   │   │   ├── keycloak.ts     # OIDC クライアント
+│   │   │   ├── keycloak-admin.ts # Admin API
+│   │   │   ├── api-auth.ts     # Bearer Token認証
+│   │   │   ├── session.ts      # セッション管理
+│   │   │   ├── user-sync.ts    # ユーザー同期
+│   │   │   └── invitation.ts   # 招待管理
+│   │   ├── db/
+│   │   │   ├── index.ts        # DB接続
+│   │   │   └── schema/         # Drizzleスキーマ
+│   │   └── repositories/       # データアクセス層
+│   └── assets/
+├── hooks.server.ts             # リクエストフック
+└── app.d.ts                    # 型定義
+```
+
+---
+
+## データベーススキーマ
+
+| テーブル | 主なカラム | 説明 |
+|---------|-----------|------|
+| users | keycloakId, email, name, isServiceAdmin | ユーザー |
+| sessions | userId, accessToken, refreshToken | セッション |
+| hospitals | name, slug, hospitalGroupId | 病院 |
+| hospital_groups | name | 病院グループ |
+| hospital_memberships | userId, hospitalId, role | ユーザー×病院 |
+| invitations | email, hospitalId, role, token | 招待 |
+| api_clients | hospitalId, keycloakClientId, name, isEnabled | APIクライアント |
+
+詳細: `docs/database.dbml`
+
+---
+
+## ドキュメント
+
+| ファイル | 内容 |
+|---------|------|
+| `docs/system-architecture.drawio` | システム構成図（draw.io形式） |
+| `docs/database.dbml` | DBスキーマ（DBML形式） |
+| `docs/api-authentication.md` | 外部API認証ガイド |
+| `docs/fhir-integration-plan.md` | FHIR統合計画 |
+| `docs/fhir-resource-mapping.md` | FHIRリソースマッピング設計 |
+| `CLAUDE.md` | Claude Code用プロジェクト情報 |
+
+---
+
+## トラブルシューティング
+
+### Keycloakに接続できない
+
+```bash
+# コンテナの状態確認
+docker-compose ps
+
+# ログ確認
+docker-compose logs keycloak
+```
+
+### DBマイグレーションエラー
+
+```bash
+# DBをリセット
+docker-compose down -v
+docker-compose up -d
+pnpm db:push
+```
+
+### HAPI FHIRが起動しない
+
+```bash
+# 起動に時間がかかる場合があります（60秒程度）
+docker-compose logs -f hapi-fhir
+
+# ヘルスチェック
+curl http://localhost:8090/fhir/metadata
+```
+
+---
