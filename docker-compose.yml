@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-document_creation}
-      POSTGRES_MULTIPLE_DATABASES: keycloak
+      POSTGRES_MULTIPLE_DATABASES: keycloak,hapi
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -41,6 +41,41 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  # HAPI FHIR Server - HL7 FHIR R4準拠のFHIRサーバー
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    container_name: document-creation-fhir
+    restart: unless-stopped
+    environment:
+      # Database configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hapi
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_DATASOURCE_DRIVERCLASSNAME: org.postgresql.Driver
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
+      # FHIR configuration
+      HAPI_FHIR_FHIR_VERSION: R4
+      HAPI_FHIR_VALIDATION_REQUESTS_ENABLED: "false"
+      HAPI_FHIR_ALLOW_EXTERNAL_REFERENCES: "true"
+      HAPI_FHIR_ALLOW_MULTIPLE_DELETE: "true"
+      HAPI_FHIR_REUSE_CACHED_SEARCH_RESULTS_MILLIS: "60000"
+      # CORS configuration
+      HAPI_FHIR_CORS_ALLOWED_ORIGIN: "http://localhost:5173,http://localhost:8080"
+      HAPI_FHIR_CORS_ALLOW_CREDENTIALS: "true"
+      # Server configuration
+      HAPI_FHIR_SERVER_ADDRESS: http://localhost:8090/fhir
+    ports:
+      - "8090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/fhir/metadata || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 volumes:
   postgres_data:
