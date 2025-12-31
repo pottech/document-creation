@@ -23,6 +23,18 @@
 
 		<div class="nav-links">
 			<a href={basePath} class:active={currentPath === basePath}>ダッシュボード</a>
+			<a
+				href="{basePath}/patients"
+				class:active={currentPath.startsWith(`${basePath}/patients`)}
+			>
+				患者管理
+			</a>
+			<a
+				href="{basePath}/care-plans"
+				class:active={currentPath.startsWith(`${basePath}/care-plans`)}
+			>
+				療養計画書
+			</a>
 			{#if data.isHospitalAdmin}
 				<a
 					href="{basePath}/members"

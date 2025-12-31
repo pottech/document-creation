@@ -10,3 +10,9 @@ export * from './invitations';
 
 // API schemas
 export * from './api-clients';
+
+// Care Plan schemas
+export * from './patients';
+export * from './care-plans';
+export * from './care-plan-staffs';
+export * from './care-plan-templates';

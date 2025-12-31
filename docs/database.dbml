@@ -167,3 +167,211 @@ TableGroup hospital_management {
 TableGroup external_api {
   api_clients
 }
+
+TableGroup care_plan_management {
+  patients
+  care_plans
+  care_plan_staffs
+  care_plan_templates
+}
+
+// ===================
+// Care Plan Tables
+// ===================
+
+Enum plan_type {
+  initial [note: '初回用（様式9）']
+  continuous [note: '継続用（様式9の2）']
+}
+
+Enum plan_status {
+  draft [note: '下書き']
+  completed [note: '作成完了']
+  signed [note: '署名済み']
+}
+
+Enum gender {
+  male [note: '男性']
+  female [note: '女性']
+}
+
+Enum blood_glucose_condition {
+  fasting [note: '空腹時']
+  random [note: '随時']
+  postprandial [note: '食後']
+}
+
+Enum nutrition_status {
+  malnourished [note: '低栄養状態の恐れ']
+  good [note: '良好']
+  obese [note: '肥満']
+}
+
+Enum guidance_area {
+  diet [note: '食事指導']
+  exercise [note: '運動指導']
+  smoking [note: 'たばこ指導']
+  other [note: 'その他']
+  medication [note: '服薬指導']
+}
+
+Table patients {
+  id uuid [pk, default: `gen_random_uuid()`, note: '患者ID']
+  hospital_id uuid [not null, ref: > hospitals.id, note: '病院ID']
+  patient_number varchar(50) [not null, note: '患者番号（院内ID）']
+  name varchar(100) [not null, note: '氏名']
+  name_kana varchar(100) [note: '氏名カナ']
+  birth_date date [not null, note: '生年月日']
+  gender gender [not null, note: '性別']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  indexes {
+    (hospital_id, patient_number) [unique, note: '病院内で患者番号は一意']
+  }
+
+  Note: '''
+    患者テーブル
+    - 各病院の患者マスタ
+    - 患者番号は病院内で一意
+    - 電子カルテ連携時は外部IDとしても利用
+  '''
+}
+
+Table care_plans {
+  id uuid [pk, default: `gen_random_uuid()`, note: '療養計画書ID']
+  hospital_id uuid [not null, ref: > hospitals.id, note: '病院ID']
+  patient_id uuid [not null, ref: > patients.id, note: '患者ID']
+
+  // 計画書種別
+  plan_type plan_type [not null, note: '計画書種別']
+  sequence_number int [not null, default: 1, note: '回数（継続用: 2以上）']
+
+  // 基本情報
+  record_date date [not null, note: '記入日']
+  consultation_date date [not null, note: '診療日']
+
+  // 主病（複数選択可）
+  has_diabetes boolean [not null, default: false, note: '糖尿病']
+  has_hypertension boolean [not null, default: false, note: '高血圧症']
+  has_hyperlipidemia boolean [not null, default: false, note: '高脂血症']
+
+  // 検査項目
+  height decimal(5,1) [note: '身長 cm']
+  weight_current decimal(5,1) [note: '体重（現在）kg']
+  weight_target decimal(5,1) [note: '体重（目標）kg']
+  bmi decimal(4,1) [note: 'BMI']
+  waist_current decimal(5,1) [note: '腹囲（現在）cm']
+  waist_target decimal(5,1) [note: '腹囲（目標）cm']
+  nutrition_status nutrition_status [note: '栄養状態']
+  blood_pressure_systolic int [note: '収縮期血圧 mmHg']
+  blood_pressure_diastolic int [note: '拡張期血圧 mmHg']
+  has_exercise_ecg boolean [default: false, note: '運動負荷心電図']
+
+  // 血液検査項目
+  blood_test_date date [note: '採血日']
+  blood_glucose_condition blood_glucose_condition [note: '血糖測定条件']
+  blood_glucose_post_meal_hours int [note: '食後時間']
+  blood_glucose int [note: '血糖値 mg/dl']
+  hba1c_current decimal(3,1) [note: 'HbA1c（現在）%']
+  hba1c_target decimal(3,1) [note: 'HbA1c（目標）%']
+  total_cholesterol int [note: '総コレステロール mg/dl']
+  triglycerides int [note: '中性脂肪 mg/dl']
+  hdl_cholesterol int [note: 'HDLコレステロール mg/dl']
+  ldl_cholesterol int [note: 'LDLコレステロール mg/dl']
+
+  // 問診
+  dietary_situation text [note: '食事の状況']
+  exercise_situation text [note: '運動の状況']
+  smoking_situation text [note: 'たばこ']
+  other_lifestyle text [note: 'その他の生活']
+
+  // 達成目標・行動目標
+  achievement_goal text [note: '①達成目標']
+  behavior_goal text [note: '②行動目標']
+
+  // 継続用固有項目
+  goal_achievement_status text [note: '目標の達成状況（継続用）']
+  next_goal text [note: '次の目標（継続用）']
+
+  // 重点指導項目（JSONB）
+  diet_guidance jsonb [note: '食事指導項目']
+  exercise_guidance jsonb [note: '運動指導項目']
+  smoking_guidance jsonb [note: 'たばこ指導項目']
+  other_guidance jsonb [note: 'その他指導項目']
+
+  // 服薬指導
+  has_no_prescription boolean [default: false, note: '処方なし']
+  has_medication_explanation boolean [default: false, note: '薬の説明']
+
+  // 療養上の問題点
+  treatment_issues text [note: '療養を行うにあたっての問題点']
+  other_facility_usage text [note: '他の施設の利用状況']
+
+  // 署名・承認
+  patient_signature varchar(100) [note: '患者署名']
+  primary_doctor_id uuid [ref: > users.id, note: '主治医（上段）']
+  secondary_doctor_id uuid [ref: > users.id, note: '医師（下段）']
+
+  // ステータス
+  status plan_status [not null, default: 'draft', note: 'ステータス']
+  pdf_path varchar(500) [note: '生成したPDFのパス']
+
+  // 監査
+  created_by uuid [not null, ref: > users.id, note: '作成者']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  indexes {
+    (hospital_id, consultation_date) [note: '診療日別検索用']
+    (patient_id, created_at) [note: '患者別履歴検索用']
+  }
+
+  Note: '''
+    療養計画書テーブル
+    - 生活習慣病療養計画書（様式9・9の2）
+    - 対象疾患: 糖尿病、高血圧症、高脂血症
+    - plan_type で初回/継続を区別
+    - 重点指導項目はJSONBで柔軟に格納
+  '''
+}
+
+Table care_plan_staffs {
+  id uuid [pk, default: `gen_random_uuid()`, note: '担当者紐付けID']
+  care_plan_id uuid [not null, ref: > care_plans.id, note: '療養計画書ID']
+  user_id uuid [not null, ref: > users.id, note: '担当者ユーザーID']
+  guidance_area guidance_area [not null, note: '担当領域']
+  display_order int [not null, default: 1, note: '表示順']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+
+  indexes {
+    (care_plan_id, guidance_area, display_order) [unique, note: '同一領域・順序は一意']
+  }
+
+  Note: '''
+    療養計画書担当者テーブル
+    - 計画書と担当者の紐付け
+    - 領域別に複数の担当者を設定可能
+    - 様式の担当者欄に対応
+  '''
+}
+
+Table care_plan_templates {
+  id uuid [pk, default: `gen_random_uuid()`, note: 'テンプレートID']
+  hospital_id uuid [not null, ref: > hospitals.id, note: '病院ID']
+  name varchar(100) [not null, note: 'テンプレート名']
+  description text [note: '説明']
+  target_disease varchar(50) [note: '対象疾患']
+  template_data jsonb [not null, note: 'テンプレートデータ']
+  is_default boolean [not null, default: false, note: 'デフォルトフラグ']
+  created_by uuid [not null, ref: > users.id, note: '作成者']
+  created_at timestamptz [not null, default: `now()`, note: '作成日時']
+  updated_at timestamptz [not null, default: `now()`, note: '更新日時']
+
+  Note: '''
+    療養計画書テンプレートテーブル
+    - 疾患別・患者属性別のテンプレート
+    - 標準テンプレートを病院別に提供
+    - template_data にデフォルト値を格納
+  '''
+}

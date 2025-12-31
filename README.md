@@ -174,6 +174,14 @@ pnpm dev
 
 アプリケーションは http://localhost:5173 でアクセス可能になります。
 
+```bash
+pnpm db:studio
+```
+
+https://local.drizzle.studio
+こちらにアクセスした後に、初期開発時は上記で作成したユーザーの権限をadmin=TRUEに変更すると
+ログイン後に管理者画面にアクセスできるようになります。
+
 ### 開発用コマンド一覧
 
 ```bash
