@@ -40,32 +40,69 @@
 </script>
 
 <div class="patients-page">
-	<div class="header">
-		<h1>患者管理</h1>
-		<button class="btn-primary" onclick={() => (showCreateModal = true)}>+ 患者を登録</button>
-	</div>
+	<header class="page-header">
+		<div class="header-left">
+			<h1>患者管理</h1>
+			<p class="subtitle">患者情報の登録と管理</p>
+		</div>
+		<button class="btn-primary" onclick={() => (showCreateModal = true)}>
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<line x1="12" y1="5" x2="12" y2="19" />
+				<line x1="5" y1="12" x2="19" y2="12" />
+			</svg>
+			患者を登録
+		</button>
+	</header>
 
-	<div class="search-bar">
-		<form onsubmit={(e) => { e.preventDefault(); handleSearch(); }}>
-			<input
-				type="text"
-				placeholder="患者番号または氏名で検索..."
-				bind:value={searchQuery}
-			/>
+	<div class="search-section">
+		<form onsubmit={(e) => { e.preventDefault(); handleSearch(); }} class="search-form">
+			<div class="search-input-wrapper">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<circle cx="11" cy="11" r="8" />
+					<line x1="21" y1="21" x2="16.65" y2="16.65" />
+				</svg>
+				<input
+					type="text"
+					placeholder="患者番号または氏名で検索..."
+					bind:value={searchQuery}
+				/>
+			</div>
 			<button type="submit" class="btn-search">検索</button>
 		</form>
 	</div>
 
-	<section class="section">
-		<h2>患者一覧 ({data.total}件)</h2>
+	<div class="content-card">
+		<div class="card-header">
+			<h2>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+					<circle cx="9" cy="7" r="4" />
+					<path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+					<path d="M16 3.13a4 4 0 0 1 0 7.75" />
+				</svg>
+				患者一覧
+			</h2>
+			<span class="count-badge">{data.total}件</span>
+		</div>
 
 		{#if data.patients.length === 0}
-			<p class="empty">
-				{data.search ? '検索条件に一致する患者がいません' : '登録されている患者がいません'}
-			</p>
+			<div class="empty-state">
+				<div class="empty-icon">
+					<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+						<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+						<circle cx="9" cy="7" r="4" />
+						<line x1="19" y1="8" x2="19" y2="14" />
+						<line x1="22" y1="11" x2="16" y2="11" />
+					</svg>
+				</div>
+				<p>{data.search ? '検索条件に一致する患者がいません' : '登録されている患者がいません'}</p>
+				<button class="btn-secondary" onclick={() => (showCreateModal = true)}>
+					最初の患者を登録する
+				</button>
+			</div>
 		{:else}
-			<div class="patient-table">
-				<table>
+			<div class="table-wrapper">
+				<table class="data-table">
 					<thead>
 						<tr>
 							<th>患者番号</th>
@@ -79,20 +116,26 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each data.patients as patient}
-							<tr>
-								<td class="patient-number">{patient.patientNumber}</td>
+						{#each data.patients as patient, i}
+							<tr style="animation-delay: {i * 0.03}s">
+								<td>
+									<span class="patient-number">{patient.patientNumber}</span>
+								</td>
 								<td>
 									<a href="/{data.hospital?.slug}/patients/{patient.id}" class="patient-link">
-										{patient.name}
+										<span class="name">{patient.name}</span>
+										{#if patient.nameKana}
+											<span class="kana">{patient.nameKana}</span>
+										{/if}
 									</a>
-									{#if patient.nameKana}
-										<span class="name-kana">{patient.nameKana}</span>
-									{/if}
 								</td>
 								<td>{new Date(patient.birthDate).toLocaleDateString('ja-JP')}</td>
-								<td>{calculateAge(patient.birthDate)}歳</td>
-								<td>{genderLabels[patient.gender]}</td>
+								<td><span class="age">{calculateAge(patient.birthDate)}歳</span></td>
+								<td>
+									<span class="gender-badge {patient.gender}">
+										{genderLabels[patient.gender]}
+									</span>
+								</td>
 								<td>
 									{#if patient.carePlanCount > 0}
 										<span class="plan-count">{patient.carePlanCount}件</span>
@@ -102,18 +145,26 @@
 								</td>
 								<td>
 									{#if patient.latestCarePlan}
-										<span class="status-badge {patient.latestCarePlan.status}">
-											{statusLabels[patient.latestCarePlan.status]}
-										</span>
-										<span class="date">
-											{new Date(patient.latestCarePlan.consultationDate).toLocaleDateString('ja-JP')}
-										</span>
+										<div class="latest-plan">
+											<span class="status-badge {patient.latestCarePlan.status}">
+												{statusLabels[patient.latestCarePlan.status]}
+											</span>
+											<span class="date">
+												{new Date(patient.latestCarePlan.consultationDate).toLocaleDateString('ja-JP')}
+											</span>
+										</div>
 									{:else}
-										-
+										<span class="no-data">-</span>
 									{/if}
 								</td>
 								<td>
-									<a href="/{data.hospital?.slug}/patients/{patient.id}/care-plans/new" class="btn-action">
+									<a href="/{data.hospital?.slug}/patients/{patient.id}/care-plans/new" class="btn-create-plan">
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+											<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+											<polyline points="14 2 14 8 20 8" />
+											<line x1="12" y1="18" x2="12" y2="12" />
+											<line x1="9" y1="15" x2="15" y2="15" />
+										</svg>
 										計画書作成
 									</a>
 								</td>
@@ -127,28 +178,50 @@
 				<div class="pagination">
 					{#if data.page > 1}
 						<a href="?page={data.page - 1}{data.search ? `&search=${data.search}` : ''}" class="page-btn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<polyline points="15 18 9 12 15 6" />
+							</svg>
 							前へ
 						</a>
 					{/if}
-					<span class="page-info">{data.page} / {data.totalPages}</span>
+					<span class="page-info">
+						<span class="current">{data.page}</span>
+						<span class="separator">/</span>
+						<span class="total">{data.totalPages}</span>
+					</span>
 					{#if data.page < data.totalPages}
 						<a href="?page={data.page + 1}{data.search ? `&search=${data.search}` : ''}" class="page-btn">
 							次へ
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<polyline points="9 18 15 12 9 6" />
+							</svg>
 						</a>
 					{/if}
 				</div>
 			{/if}
 		{/if}
-	</section>
+	</div>
 </div>
 
-<!-- 患者登録モーダル -->
 {#if showCreateModal}
 	<div class="modal-overlay" onclick={() => (showCreateModal = false)}>
 		<div class="modal" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
-				<h3>患者を登録</h3>
-				<button class="close-btn" onclick={() => (showCreateModal = false)}>&times;</button>
+				<h3>
+					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+						<circle cx="8.5" cy="7" r="4" />
+						<line x1="20" y1="8" x2="20" y2="14" />
+						<line x1="23" y1="11" x2="17" y2="11" />
+					</svg>
+					患者を登録
+				</h3>
+				<button class="close-btn" onclick={() => (showCreateModal = false)}>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<line x1="18" y1="6" x2="6" y2="18" />
+						<line x1="6" y1="6" x2="18" y2="18" />
+					</svg>
+				</button>
 			</div>
 			<form
 				method="POST"
@@ -166,32 +239,51 @@
 				}}
 			>
 				{#if createError}
-					<div class="error-message">{createError}</div>
+					<div class="error-message">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="12" cy="12" r="10" />
+							<line x1="12" y1="8" x2="12" y2="12" />
+							<line x1="12" y1="16" x2="12.01" y2="16" />
+						</svg>
+						{createError}
+					</div>
 				{/if}
 
 				<div class="form-group">
-					<label for="patientNumber">患者番号 *</label>
-					<input type="text" id="patientNumber" name="patientNumber" required />
+					<label for="patientNumber">
+						患者番号
+						<span class="required">必須</span>
+					</label>
+					<input type="text" id="patientNumber" name="patientNumber" required placeholder="例: P001" />
 				</div>
 
 				<div class="form-group">
-					<label for="name">氏名 *</label>
-					<input type="text" id="name" name="name" required />
+					<label for="name">
+						氏名
+						<span class="required">必須</span>
+					</label>
+					<input type="text" id="name" name="name" required placeholder="例: 山田 太郎" />
 				</div>
 
 				<div class="form-group">
 					<label for="nameKana">氏名（カナ）</label>
-					<input type="text" id="nameKana" name="nameKana" />
+					<input type="text" id="nameKana" name="nameKana" placeholder="例: ヤマダ タロウ" />
 				</div>
 
 				<div class="form-row">
 					<div class="form-group">
-						<label for="birthDate">生年月日 *</label>
+						<label for="birthDate">
+							生年月日
+							<span class="required">必須</span>
+						</label>
 						<input type="date" id="birthDate" name="birthDate" required />
 					</div>
 
 					<div class="form-group">
-						<label for="gender">性別 *</label>
+						<label for="gender">
+							性別
+							<span class="required">必須</span>
+						</label>
 						<select id="gender" name="gender" required>
 							<option value="">選択してください</option>
 							<option value="male">男性</option>
@@ -204,7 +296,12 @@
 					<button type="button" class="btn-cancel" onclick={() => (showCreateModal = false)}>
 						キャンセル
 					</button>
-					<button type="submit" class="btn-primary">登録</button>
+					<button type="submit" class="btn-submit">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="20 6 9 17 4 12" />
+						</svg>
+						登録する
+					</button>
 				</div>
 			</form>
 		</div>
@@ -213,144 +310,322 @@
 
 <style>
 	.patients-page {
-		max-width: 1100px;
+		max-width: 1200px;
+		animation: fadeIn 0.4s ease-out;
 	}
 
-	.header {
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.page-header {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		align-items: flex-start;
 		margin-bottom: 1.5rem;
 	}
 
-	h1 {
+	.header-left h1 {
+		margin: 0 0 0.25rem;
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: #1a2b3c;
+		letter-spacing: -0.02em;
+	}
+
+	.subtitle {
 		margin: 0;
+		color: #6b7c8c;
+		font-size: 0.9375rem;
 	}
 
 	.btn-primary {
-		background: #2563eb;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: linear-gradient(135deg, #0f4c5c 0%, #0a3642 100%);
 		color: white;
-		padding: 0.75rem 1.5rem;
-		border-radius: 4px;
+		padding: 0.75rem 1.25rem;
+		border-radius: 10px;
 		text-decoration: none;
-		font-weight: 500;
+		font-weight: 600;
+		font-size: 0.9375rem;
 		border: none;
 		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(15, 76, 92, 0.25);
+		transition: all 0.2s ease;
 	}
 
 	.btn-primary:hover {
-		background: #1d4ed8;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 16px rgba(15, 76, 92, 0.35);
 	}
 
-	.search-bar {
+	.search-section {
 		margin-bottom: 1.5rem;
 	}
 
-	.search-bar form {
+	.search-form {
 		display: flex;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 
-	.search-bar input {
+	.search-input-wrapper {
 		flex: 1;
-		padding: 0.75rem 1rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.875rem;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0 1rem;
+		background: white;
+		border: 2px solid #e8eef3;
+		border-radius: 12px;
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.search-input-wrapper:focus-within {
+		border-color: #5dd9c1;
+		box-shadow: 0 0 0 3px rgba(93, 217, 193, 0.15);
+	}
+
+	.search-input-wrapper svg {
+		color: #9ba8b5;
+	}
+
+	.search-input-wrapper input {
+		flex: 1;
+		padding: 0.875rem 0;
+		border: none;
+		font-size: 0.9375rem;
+		background: transparent;
+		color: #1a2b3c;
+	}
+
+	.search-input-wrapper input::placeholder {
+		color: #9ba8b5;
+	}
+
+	.search-input-wrapper input:focus {
+		outline: none;
 	}
 
 	.btn-search {
-		padding: 0.75rem 1.5rem;
-		background: #f1f5f9;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
+		padding: 0.875rem 1.5rem;
+		background: #f0f4f8;
+		border: 2px solid #e8eef3;
+		border-radius: 12px;
 		cursor: pointer;
+		font-weight: 600;
+		font-size: 0.9375rem;
+		color: #4a5b6c;
+		transition: all 0.2s ease;
 	}
 
 	.btn-search:hover {
-		background: #e2e8f0;
+		background: #e8eef3;
 	}
 
-	.section {
+	.content-card {
 		background: white;
-		padding: 1.5rem;
-		border-radius: 8px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		border-radius: 16px;
+		box-shadow: 0 2px 12px rgba(15, 76, 92, 0.06);
+		overflow: hidden;
 	}
 
-	.section h2 {
+	.card-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1.25rem 1.5rem;
+		border-bottom: 1px solid #f0f4f8;
+	}
+
+	.card-header h2 {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0;
 		font-size: 1rem;
-		margin-bottom: 1rem;
-		padding-bottom: 0.5rem;
-		border-bottom: 1px solid #e2e8f0;
+		font-weight: 600;
+		color: #1a2b3c;
 	}
 
-	.empty {
-		color: #64748b;
-		font-size: 0.875rem;
+	.card-header h2 svg {
+		color: #5dd9c1;
+	}
+
+	.count-badge {
+		padding: 0.375rem 0.875rem;
+		background: linear-gradient(135deg, #e8f8f5 0%, #d0f0ea 100%);
+		border-radius: 20px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: #0f4c5c;
+	}
+
+	.empty-state {
+		padding: 4rem 2rem;
 		text-align: center;
-		padding: 2rem;
 	}
 
-	.patient-table {
+	.empty-icon {
+		color: #c0c8d0;
+		margin-bottom: 1rem;
+	}
+
+	.empty-state p {
+		color: #6b7c8c;
+		margin-bottom: 1.5rem;
+	}
+
+	.btn-secondary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.5rem;
+		background: #f0f4f8;
+		border: 2px solid #e8eef3;
+		border-radius: 10px;
+		font-weight: 600;
+		font-size: 0.9375rem;
+		color: #4a5b6c;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.btn-secondary:hover {
+		background: #e8eef3;
+	}
+
+	.table-wrapper {
 		overflow-x: auto;
 	}
 
-	table {
+	.data-table {
 		width: 100%;
 		border-collapse: collapse;
 	}
 
-	th,
-	td {
-		padding: 0.75rem;
+	.data-table th,
+	.data-table td {
+		padding: 1rem 1.25rem;
 		text-align: left;
-		border-bottom: 1px solid #f1f5f9;
+		border-bottom: 1px solid #f0f4f8;
 	}
 
-	th {
-		font-weight: 500;
-		color: #64748b;
-		font-size: 0.875rem;
-		white-space: nowrap;
+	.data-table th {
+		font-weight: 600;
+		color: #6b7c8c;
+		font-size: 0.8125rem;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		background: #fafbfc;
+	}
+
+	.data-table tbody tr {
+		animation: rowFadeIn 0.3s ease-out both;
+		transition: background 0.2s ease;
+	}
+
+	@keyframes rowFadeIn {
+		from {
+			opacity: 0;
+			transform: translateX(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+
+	.data-table tbody tr:hover {
+		background: #fafbfc;
 	}
 
 	.patient-number {
-		font-family: monospace;
+		font-family: 'SF Mono', Monaco, monospace;
 		font-size: 0.875rem;
+		color: #6b7c8c;
+		background: #f0f4f8;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
 	}
 
 	.patient-link {
-		color: #2563eb;
+		display: flex;
+		flex-direction: column;
 		text-decoration: none;
+		color: inherit;
+	}
+
+	.patient-link .name {
+		font-weight: 600;
+		color: #0f4c5c;
+		transition: color 0.2s ease;
+	}
+
+	.patient-link:hover .name {
+		color: #5dd9c1;
+	}
+
+	.patient-link .kana {
+		font-size: 0.75rem;
+		color: #9ba8b5;
+		margin-top: 0.125rem;
+	}
+
+	.age {
+		font-weight: 500;
+		color: #4a5b6c;
+	}
+
+	.gender-badge {
+		display: inline-block;
+		padding: 0.25rem 0.625rem;
+		border-radius: 6px;
+		font-size: 0.8125rem;
 		font-weight: 500;
 	}
 
-	.patient-link:hover {
-		text-decoration: underline;
+	.gender-badge.male {
+		background: #e8f4fc;
+		color: #2980b9;
 	}
 
-	.name-kana {
-		display: block;
-		font-size: 0.75rem;
-		color: #64748b;
+	.gender-badge.female {
+		background: #fce8f0;
+		color: #d63384;
 	}
 
 	.plan-count {
-		font-size: 0.875rem;
+		font-weight: 600;
 		color: #16a34a;
 	}
 
 	.no-plan {
+		color: #9ba8b5;
 		font-size: 0.875rem;
-		color: #94a3b8;
+	}
+
+	.latest-plan {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
 
 	.status-badge {
+		display: inline-block;
+		padding: 0.25rem 0.625rem;
+		border-radius: 6px;
 		font-size: 0.75rem;
-		padding: 0.25rem 0.5rem;
-		border-radius: 4px;
-		margin-right: 0.5rem;
+		font-weight: 600;
+		width: fit-content;
 	}
 
 	.status-badge.draft {
@@ -369,21 +644,32 @@
 	}
 
 	.date {
-		font-size: 0.75rem;
-		color: #64748b;
+		font-size: 0.8125rem;
+		color: #6b7c8c;
 	}
 
-	.btn-action {
-		font-size: 0.75rem;
-		padding: 0.375rem 0.75rem;
-		background: #f1f5f9;
-		color: #334155;
-		border-radius: 4px;
+	.no-data {
+		color: #c0c8d0;
+	}
+
+	.btn-create-plan {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.5rem 0.875rem;
+		background: linear-gradient(135deg, #e8f8f5 0%, #d0f0ea 100%);
+		border: 1px solid #5dd9c1;
+		border-radius: 8px;
+		color: #0a3642;
+		font-size: 0.8125rem;
+		font-weight: 600;
 		text-decoration: none;
+		transition: all 0.2s ease;
 	}
 
-	.btn-action:hover {
-		background: #e2e8f0;
+	.btn-create-plan:hover {
+		background: linear-gradient(135deg, #5dd9c1 0%, #3ecfb2 100%);
+		color: white;
 	}
 
 	.pagination {
@@ -391,95 +677,187 @@
 		justify-content: center;
 		align-items: center;
 		gap: 1rem;
-		margin-top: 1.5rem;
-		padding-top: 1rem;
-		border-top: 1px solid #f1f5f9;
+		padding: 1.25rem;
+		border-top: 1px solid #f0f4f8;
 	}
 
 	.page-btn {
-		padding: 0.5rem 1rem;
-		background: #f1f5f9;
-		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.625rem 1rem;
+		background: #f0f4f8;
+		border-radius: 8px;
 		text-decoration: none;
-		color: #334155;
+		color: #4a5b6c;
+		font-weight: 500;
+		font-size: 0.875rem;
+		transition: all 0.2s ease;
 	}
 
 	.page-btn:hover {
-		background: #e2e8f0;
+		background: #e8eef3;
 	}
 
 	.page-info {
-		color: #64748b;
-		font-size: 0.875rem;
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		font-size: 0.9375rem;
 	}
 
-	/* モーダル */
+	.page-info .current {
+		font-weight: 700;
+		color: #0f4c5c;
+	}
+
+	.page-info .separator {
+		color: #c0c8d0;
+	}
+
+	.page-info .total {
+		color: #6b7c8c;
+	}
+
+	/* Modal */
 	.modal-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(10, 30, 40, 0.6);
+		backdrop-filter: blur(4px);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		z-index: 100;
+		animation: overlayFadeIn 0.2s ease-out;
+	}
+
+	@keyframes overlayFadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
 	}
 
 	.modal {
 		background: white;
-		padding: 1.5rem;
-		border-radius: 8px;
+		padding: 0;
+		border-radius: 20px;
 		width: 100%;
-		max-width: 500px;
+		max-width: 520px;
 		max-height: 90vh;
 		overflow-y: auto;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		animation: modalSlideIn 0.3s ease-out;
+	}
+
+	@keyframes modalSlideIn {
+		from {
+			opacity: 0;
+			transform: scale(0.95) translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1) translateY(0);
+		}
 	}
 
 	.modal-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 1.5rem;
+		padding: 1.5rem;
+		border-bottom: 1px solid #f0f4f8;
 	}
 
 	.modal-header h3 {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
 		margin: 0;
+		font-size: 1.125rem;
+		font-weight: 700;
+		color: #1a2b3c;
+	}
+
+	.modal-header h3 svg {
+		color: #5dd9c1;
 	}
 
 	.close-btn {
 		background: none;
 		border: none;
-		font-size: 1.5rem;
+		padding: 0.5rem;
 		cursor: pointer;
-		color: #64748b;
+		color: #9ba8b5;
+		border-radius: 8px;
+		transition: all 0.2s ease;
+	}
+
+	.close-btn:hover {
+		background: #f0f4f8;
+		color: #4a5b6c;
+	}
+
+	.modal form {
+		padding: 1.5rem;
 	}
 
 	.error-message {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
 		background: #fef2f2;
 		color: #dc2626;
-		padding: 0.75rem;
-		border-radius: 4px;
-		margin-bottom: 1rem;
+		padding: 0.875rem 1rem;
+		border-radius: 10px;
+		margin-bottom: 1.25rem;
 		font-size: 0.875rem;
+		font-weight: 500;
 	}
 
 	.form-group {
-		margin-bottom: 1rem;
+		margin-bottom: 1.25rem;
 	}
 
 	.form-group label {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		font-size: 0.875rem;
-		font-weight: 500;
+		font-weight: 600;
+		color: #4a5b6c;
 		margin-bottom: 0.5rem;
+	}
+
+	.required {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: white;
+		background: #e74c3c;
+		padding: 0.125rem 0.375rem;
+		border-radius: 4px;
 	}
 
 	.form-group input,
 	.form-group select {
 		width: 100%;
-		padding: 0.75rem;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
-		font-size: 0.875rem;
+		padding: 0.875rem 1rem;
+		border: 2px solid #e8eef3;
+		border-radius: 10px;
+		font-size: 0.9375rem;
+		color: #1a2b3c;
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		font-family: inherit;
+	}
+
+	.form-group input::placeholder {
+		color: #9ba8b5;
+	}
+
+	.form-group input:focus,
+	.form-group select:focus {
+		outline: none;
+		border-color: #5dd9c1;
+		box-shadow: 0 0 0 3px rgba(93, 217, 193, 0.15);
 	}
 
 	.form-row {
@@ -493,19 +871,46 @@
 		justify-content: flex-end;
 		gap: 0.75rem;
 		margin-top: 1.5rem;
-		padding-top: 1rem;
-		border-top: 1px solid #e2e8f0;
+		padding-top: 1.25rem;
+		border-top: 1px solid #f0f4f8;
 	}
 
 	.btn-cancel {
-		padding: 0.75rem 1.5rem;
-		background: white;
-		border: 1px solid #e2e8f0;
-		border-radius: 4px;
+		padding: 0.875rem 1.5rem;
+		background: #f0f4f8;
+		border: none;
+		border-radius: 10px;
+		font-weight: 600;
+		font-size: 0.9375rem;
+		color: #4a5b6c;
 		cursor: pointer;
+		transition: all 0.2s ease;
+		font-family: inherit;
 	}
 
 	.btn-cancel:hover {
-		background: #f8fafc;
+		background: #e8eef3;
+	}
+
+	.btn-submit {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.875rem 1.5rem;
+		background: linear-gradient(135deg, #0f4c5c 0%, #0a3642 100%);
+		border: none;
+		border-radius: 10px;
+		font-weight: 600;
+		font-size: 0.9375rem;
+		color: white;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(15, 76, 92, 0.25);
+		transition: all 0.2s ease;
+		font-family: inherit;
+	}
+
+	.btn-submit:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 16px rgba(15, 76, 92, 0.35);
 	}
 </style>
