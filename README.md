@@ -8,6 +8,7 @@
 - [技術スタック](#技術スタック)
 - [主な機能](#主な機能)
 - [開発環境構築](#開発環境構築)
+- [テスト](#テスト)
 - [Dockerコンテナ](#dockerコンテナ)
 - [認証・認可](#認証認可)
 - [外部API連携](#外部api連携)
@@ -85,6 +86,8 @@
 | ビルドツール | Vite | 7.x |
 | 言語 | TypeScript | strict mode |
 | パッケージマネージャ | pnpm | - |
+| ユニットテスト | Vitest + Testing Library | - |
+| E2Eテスト | Playwright | - |
 
 ---
 
@@ -229,6 +232,16 @@ pnpm build
 # 型チェック
 pnpm check
 
+# ユニットテスト（Vitest）
+pnpm test              # ウォッチモード
+pnpm test:run          # 単発実行
+pnpm test:coverage     # カバレッジ付き
+
+# E2Eテスト（Playwright）
+pnpm test:e2e          # E2Eテスト実行
+pnpm test:e2e:ui       # UIモード（インタラクティブ）
+pnpm test:e2e:headed   # ブラウザ表示付き
+
 # Dockerコンテナ起動
 pnpm docker:up
 
@@ -247,6 +260,76 @@ pnpm db:push
 # Drizzle Studio（DB GUI）
 pnpm db:studio
 ```
+
+---
+
+## テスト
+
+### テスト構成
+
+本プロジェクトでは、Vitest によるユニットテストと Playwright による E2E テストを採用しています。
+
+```
+tests/
+├── unit/                      # ユニットテスト（Vitest）
+│   ├── invitation.test.ts     # トークン生成テスト
+│   └── audit-service.test.ts  # 監査ログ差分計算テスト
+├── e2e/                       # E2Eテスト（Playwright）
+│   ├── fixtures.ts            # 共通フィクスチャ・セレクター
+│   ├── auth.spec.ts           # 認証フローテスト
+│   ├── patients.spec.ts       # 患者管理テスト
+│   └── care-plans.spec.ts     # 療養計画書作成テスト
+└── setup.ts                   # Vitestセットアップ（SvelteKitモック）
+```
+
+### ユニットテスト（Vitest）
+
+ビジネスロジックやユーティリティ関数のテストに使用します。
+
+```bash
+# ウォッチモードで実行（開発中）
+pnpm test
+
+# 単発実行（CI向け）
+pnpm test:run
+
+# カバレッジレポート付き
+pnpm test:coverage
+```
+
+### E2Eテスト（Playwright）
+
+ブラウザを使用した統合テストに使用します。
+
+```bash
+# E2Eテスト実行
+pnpm test:e2e
+
+# UIモード（インタラクティブなデバッグ）
+pnpm test:e2e:ui
+
+# ブラウザを表示して実行
+pnpm test:e2e:headed
+```
+
+### 認証が必要なE2Eテストの実行
+
+Keycloak認証が必要なテストを実行するには、事前にログイン状態を保存します。
+
+```bash
+# 1. ログイン状態を保存（ブラウザが開きます）
+npx playwright codegen --save-storage=auth.json http://localhost:5173
+
+# 2. 保存した状態でテスト実行
+npx playwright test --storage-state=auth.json
+```
+
+### テストカバレッジ
+
+| テスト種別 | 対象 | 件数 |
+|-----------|------|------|
+| ユニットテスト | トークン生成、差分計算 | 11件 |
+| E2Eテスト | 認証フロー、患者管理、療養計画書 | 27件（認証必要なテストはスキップ可） |
 
 ---
 
@@ -472,6 +555,17 @@ src/
 │   └── assets/
 ├── hooks.server.ts             # リクエストフック
 └── app.d.ts                    # 型定義
+
+tests/
+├── unit/                       # ユニットテスト（Vitest）
+│   ├── invitation.test.ts
+│   └── audit-service.test.ts
+├── e2e/                        # E2Eテスト（Playwright）
+│   ├── fixtures.ts
+│   ├── auth.spec.ts
+│   ├── patients.spec.ts
+│   └── care-plans.spec.ts
+└── setup.ts                    # Vitestセットアップ
 ```
 
 ---

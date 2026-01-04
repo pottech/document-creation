@@ -18,6 +18,20 @@ pnpm build
 pnpm check
 ```
 
+## Test Commands
+
+```bash
+# Unit tests (Vitest)
+pnpm test              # Watch mode
+pnpm test:run          # Single run
+pnpm test:coverage     # With coverage report
+
+# E2E tests (Playwright)
+pnpm test:e2e          # Run E2E tests
+pnpm test:e2e:ui       # UI mode (interactive)
+pnpm test:e2e:headed   # With browser visible
+```
+
 ## Database Commands
 
 ```bash
@@ -48,6 +62,8 @@ pnpm db:studio
 - **Build Tool**: Vite 7
 - **Language**: TypeScript (strict mode)
 - **Package Manager**: pnpm
+- **Unit Testing**: Vitest + Testing Library
+- **E2E Testing**: Playwright
 
 ## Architecture
 
@@ -181,3 +197,41 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 - `GET /api/v1/hospitals/:id` - 病院詳細
 
 詳細は `docs/api-authentication.md` を参照。
+
+## Testing
+
+### Test Structure
+
+```
+tests/
+├── unit/                    # Vitest unit tests
+│   ├── invitation.test.ts   # Token generation tests
+│   └── audit-service.test.ts # Audit diff calculation tests
+├── e2e/                     # Playwright E2E tests
+│   ├── fixtures.ts          # Shared fixtures & selectors
+│   ├── auth.spec.ts         # Authentication flow tests
+│   ├── patients.spec.ts     # Patient management tests
+│   └── care-plans.spec.ts   # Care plan creation tests
+└── setup.ts                 # Vitest setup (SvelteKit mocks)
+```
+
+### Running Tests
+
+```bash
+# Unit tests
+pnpm test:run
+
+# E2E tests (requires dev server)
+pnpm test:e2e
+
+# E2E with authentication (save login state first)
+npx playwright codegen --save-storage=auth.json http://localhost:5173
+npx playwright test --storage-state=auth.json
+```
+
+### Writing Tests
+
+- Unit tests: Place in `tests/unit/` or `src/**/*.test.ts`
+- E2E tests: Place in `tests/e2e/*.spec.ts`
+- Use `test.skip()` for tests requiring authentication in CI
+- Use `@smoke` tag for quick sanity checks
