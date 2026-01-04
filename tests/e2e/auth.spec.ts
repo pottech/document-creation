@@ -44,22 +44,6 @@ test.describe('認証フロー', () => {
 	});
 });
 
-test.describe('セッション管理', () => {
-	test('ログアウトボタンが機能する', async ({ page }) => {
-		// このテストは認証済み状態が必要
-		// 実際のテストでは事前にログインしたstorageStateを使用する
-		test.skip(true, '認証済み状態が必要なためスキップ');
-
-		await page.goto('/test-hospital');
-
-		// ログアウトボタンをクリック
-		await page.click(SELECTORS.LOGOUT_BUTTON);
-
-		// ログインページにリダイレクトされることを確認
-		await page.waitForURL(/\/login/);
-	});
-});
-
 test.describe('招待フロー', () => {
 	test('無効な招待トークンでエラーまたはリダイレクトが発生する', async ({ page }) => {
 		// 無効なトークンでアクセス

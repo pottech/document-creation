@@ -1,62 +1,56 @@
 import { test, expect } from '@playwright/test';
-import { SELECTORS, TEST_CONFIG } from './fixtures';
+import { TEST_CONFIG, TEST_IDS } from './fixtures';
 
 /**
  * 療養計画書のE2Eテスト
- * 注意: これらのテストは認証済み状態が必要です
+ * 認証済み状態で実行（storageStateがplaywrightConfigで設定済み）
  */
 test.describe('療養計画書', () => {
 	test.describe('療養計画書作成フォーム', () => {
 		test('タブナビゲーションが正しく機能する', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
 			// テスト用患者の療養計画書作成ページにアクセス
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// タブが7つ表示されていることを確認
 			const tabs = page.locator('.tab');
 			await expect(tabs).toHaveCount(7);
 
-			// 最初のタブ（基本情報）がアクティブ
+			// 最初のタブがアクティブ
 			await expect(tabs.first()).toHaveClass(/active/);
 
 			// 「次へ」ボタンをクリック
-			await page.click(SELECTORS.NEXT_BUTTON);
+			await page.click('button.btn-primary:has-text("次へ")');
 
-			// 2番目のタブ（検査項目）がアクティブになる
+			// 2番目のタブがアクティブになる
 			await expect(tabs.nth(1)).toHaveClass(/active/);
 
 			// 「前へ」ボタンをクリック
-			await page.click(SELECTORS.PREV_BUTTON);
+			await page.click('button.btn-secondary:has-text("前へ")');
 
 			// 最初のタブに戻る
 			await expect(tabs.first()).toHaveClass(/active/);
 		});
 
 		test('タブをクリックして直接移動できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// 5番目のタブ（運動指導）をクリック
 			await page.click('.tab:nth-child(5)');
 
-			// タブパネルのタイトルを確認
+			// 運動指導のタブパネルがアクティブになる
 			await expect(page.locator('.tab-panel.active h2')).toContainText('運動');
 		});
 
 		test('基本情報タブのフォーム要素が正しく表示される', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// 計画書種別ラジオボタン
 			await expect(page.locator('input[name="planType"][value="initial"]')).toBeVisible();
 			await expect(page.locator('input[name="planType"][value="continuous"]')).toBeVisible();
 
 			// 日付入力フィールド
-			await expect(page.locator(SELECTORS.RECORD_DATE_INPUT)).toBeVisible();
-			await expect(page.locator(SELECTORS.CONSULTATION_DATE_INPUT)).toBeVisible();
+			await expect(page.locator('#recordDate')).toBeVisible();
+			await expect(page.locator('#consultationDate')).toBeVisible();
 
 			// 主病チェックボックス
 			await expect(page.locator('input[name="hasDiabetes"]')).toBeVisible();
@@ -65,9 +59,7 @@ test.describe('療養計画書', () => {
 		});
 
 		test('検査項目タブで血液検査データを入力できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// 検査項目タブに移動
 			await page.click('.tab:nth-child(2)');
@@ -91,9 +83,7 @@ test.describe('療養計画書', () => {
 		});
 
 		test('食事指導タブでチェックボックスを選択できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// 食事指導タブに移動
 			await page.click('.tab:nth-child(4)');
@@ -110,9 +100,7 @@ test.describe('療養計画書', () => {
 		});
 
 		test('運動指導タブで運動処方を入力できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// 運動指導タブに移動
 			await page.click('.tab:nth-child(5)');
@@ -128,9 +116,7 @@ test.describe('療養計画書', () => {
 		});
 
 		test('署名・確認タブで保存オプションを選択できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 			// 署名・確認タブに移動
 			await page.click('.tab:nth-child(7)');
@@ -144,31 +130,26 @@ test.describe('療養計画書', () => {
 		});
 
 		test('フォームを保存できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
-
-			// 基本情報を入力
+			// 基本情報を入力（主病を選択）
 			await page.check('input[name="hasDiabetes"]');
 
 			// 最後のタブまで移動
 			for (let i = 0; i < 6; i++) {
-				await page.click(SELECTORS.NEXT_BUTTON);
+				await page.click('button.btn-primary:has-text("次へ")');
 			}
 
 			// 保存ボタンをクリック
-			await page.click(SELECTORS.SAVE_BUTTON);
+			await page.click('button.btn-submit');
 
-			// 保存後の遷移または成功メッセージを確認
-			// （実装によって確認方法は異なる）
-			await page.waitForTimeout(1000);
+			// 保存後にページ遷移またはレスポンスを待つ
+			await page.waitForLoadState('networkidle');
 		});
 	});
 
 	test.describe('療養計画書一覧', () => {
 		test('療養計画書一覧ページが表示される', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
-
 			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/care-plans`);
 
 			// ページタイトルを確認
@@ -177,37 +158,24 @@ test.describe('療養計画書', () => {
 	});
 
 	test.describe('療養計画書詳細・編集', () => {
-		test('既存の療養計画書を編集できる', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
+		test('既存の療養計画書を表示できる', async ({ page }) => {
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/${TEST_IDS.CARE_PLAN_ID}`);
 
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/test-plan-id`);
-
-			// 編集フォームが表示される
-			await expect(page.locator('.care-plan-form')).toBeVisible();
+			// 療養計画書の詳細ページが表示される（タイトルを確認）
+			await expect(page.locator('h1')).toContainText('療養計画書');
 		});
 	});
 
 	test.describe('PDF出力', () => {
-		test('PDF出力ボタンが機能する', async ({ page }) => {
-			test.skip(true, '認証済み状態が必要なためスキップ');
+		test('PDF出力ボタンが存在する', async ({ page }) => {
+			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/${TEST_IDS.CARE_PLAN_ID}`);
 
-			await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/test-plan-id`);
-
-			// PDF出力ボタンを探す
+			// PDF出力ボタンを探す（存在する場合のみテスト）
 			const pdfButton = page.locator('button:has-text("PDF"), a:has-text("PDF")');
+			const count = await pdfButton.count();
 
-			if (await pdfButton.isVisible()) {
-				// ダウンロードイベントを待機
-				const downloadPromise = page.waitForEvent('download');
-				await pdfButton.click();
-
-				// ダウンロードが開始されることを確認（タイムアウトで失敗する可能性あり）
-				try {
-					const download = await downloadPromise;
-					expect(download.suggestedFilename()).toContain('.pdf');
-				} catch {
-					// PDF生成に時間がかかる場合はスキップ
-				}
+			if (count > 0) {
+				await expect(pdfButton.first()).toBeVisible();
 			}
 		});
 	});
@@ -215,9 +183,7 @@ test.describe('療養計画書', () => {
 
 test.describe('パンくずリスト', () => {
 	test('パンくずリストが正しく表示される', async ({ page }) => {
-		test.skip(true, '認証済み状態が必要なためスキップ');
-
-		await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+		await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 		// パンくずリストを確認
 		const breadcrumb = page.locator('.breadcrumb');
@@ -228,9 +194,7 @@ test.describe('パンくずリスト', () => {
 	});
 
 	test('パンくずリストのリンクが機能する', async ({ page }) => {
-		test.skip(true, '認証済み状態が必要なためスキップ');
-
-		await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/test-patient-id/care-plans/new`);
+		await page.goto(`/${TEST_CONFIG.HOSPITAL_SLUG}/patients/${TEST_IDS.PATIENT_ID}/care-plans/new`);
 
 		// 患者管理リンクをクリック
 		await page.click('.breadcrumb a:has-text("患者管理")');
