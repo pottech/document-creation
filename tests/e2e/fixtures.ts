@@ -1,18 +1,13 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 /**
- * 認証済み状態のテストフィクスチャ
- * 実際のKeycloak認証をテストする場合はstorageStateを使用
+ * テストフィクスチャ
+ * authenticatedプロジェクトではstorageStateによりセッションCookieが自動設定される
  */
 export const test = base.extend<{
-	authenticatedPage: ReturnType<typeof base.page>;
+	authenticatedPage: Page;
 }>({
 	authenticatedPage: async ({ page }, use) => {
-		// 認証が必要なテストではここで認証処理を行う
-		// Keycloakにログインしてセッションを保存する場合:
-		// await page.goto('/login');
-		// await page.click('button:has-text("Keycloakでサインイン")');
-		// ... Keycloakでの認証フロー
 		await use(page);
 	}
 });
@@ -20,16 +15,45 @@ export const test = base.extend<{
 export { expect };
 
 /**
+ * シードデータのID（scripts/seed-test-data.tsと同期）
+ */
+export const TEST_IDS = {
+	USER_ID: '00000000-0000-0000-0000-000000000001',
+	ADMIN_USER_ID: '00000000-0000-0000-0000-000000000002',
+	HOSPITAL_ID: '00000000-0000-0000-0000-000000000101',
+	PATIENT_ID: '00000000-0000-0000-0000-000000000201',
+	PATIENT_ID_2: '00000000-0000-0000-0000-000000000202',
+	CARE_PLAN_ID: '00000000-0000-0000-0000-000000000301'
+};
+
+/**
  * テスト用定数
  */
 export const TEST_CONFIG = {
-	// テスト用病院スラッグ（実際のテスト環境に合わせて変更）
+	// テスト用病院スラッグ
 	HOSPITAL_SLUG: 'test-hospital',
-	// テスト用患者データ
-	TEST_PATIENT: {
+	// シードデータの患者情報
+	SEEDED_PATIENT: {
+		id: TEST_IDS.PATIENT_ID,
+		patientNumber: 'P001',
+		name: '山田花子',
+		nameKana: 'ヤマダハナコ',
+		birthDate: '1965-03-15',
+		gender: 'female'
+	},
+	SEEDED_PATIENT_2: {
+		id: TEST_IDS.PATIENT_ID_2,
+		patientNumber: 'P002',
+		name: '鈴木一郎',
+		nameKana: 'スズキイチロウ',
+		birthDate: '1958-07-22',
+		gender: 'male'
+	},
+	// 新規登録テスト用患者データ
+	NEW_PATIENT: {
 		patientNumber: `P${Date.now()}`,
-		name: 'テスト 患者',
-		nameKana: 'テスト カンジャ',
+		name: 'テスト 新規患者',
+		nameKana: 'テスト シンキカンジャ',
 		birthDate: '1990-01-15',
 		gender: 'male'
 	}

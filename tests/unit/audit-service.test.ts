@@ -86,8 +86,8 @@ describe('AuditService', () => {
 		});
 
 		it('null から値への変更を検出する', () => {
-			const before = { name: null };
-			const after = { name: '山田太郎' };
+			const before: { name: string | null } = { name: null };
+			const after: { name: string | null } = { name: '山田太郎' };
 
 			const changes = calculateChanges(before, after, ['name']);
 
@@ -97,8 +97,8 @@ describe('AuditService', () => {
 		});
 
 		it('値から null への変更を検出する', () => {
-			const before = { name: '山田太郎' };
-			const after = { name: null };
+			const before: { name: string | null } = { name: '山田太郎' };
+			const after: { name: string | null } = { name: null };
 
 			const changes = calculateChanges(before, after, ['name']);
 
