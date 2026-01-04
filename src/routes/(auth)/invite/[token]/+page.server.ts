@@ -42,39 +42,66 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	};
 };
 
+/**
+ * OAuth認証フローを開始する共通処理
+ * @param params ルートパラメータ
+ * @param cookies クッキー
+ * @param isRegistration 新規登録フローかどうか
+ */
+function startOAuthFlow(
+	params: { token: string },
+	cookies: import('@sveltejs/kit').Cookies,
+	isRegistration: boolean = false
+) {
+	const state = generateState();
+	const codeVerifier = generateCodeVerifier();
+
+	const url = keycloak.createAuthorizationURL(state, codeVerifier, ['openid', 'profile', 'email']);
+
+	// 新規登録の場合、Keycloakの登録画面に直接遷移するパラメータを追加
+	if (isRegistration) {
+		url.searchParams.set('kc_action', 'register');
+	}
+
+	// Store state, verifier, and invitation token in cookies
+	cookies.set(STATE_COOKIE, state, {
+		path: '/',
+		httpOnly: true,
+		secure: !dev,
+		maxAge: 60 * 10,
+		sameSite: 'lax'
+	});
+
+	cookies.set(VERIFIER_COOKIE, codeVerifier, {
+		path: '/',
+		httpOnly: true,
+		secure: !dev,
+		maxAge: 60 * 10,
+		sameSite: 'lax'
+	});
+
+	// Store invitation token so we can process it after OAuth callback
+	cookies.set(INVITATION_COOKIE, params.token, {
+		path: '/',
+		httpOnly: true,
+		secure: !dev,
+		maxAge: 60 * 10,
+		sameSite: 'lax'
+	});
+
+	return url.toString();
+}
+
 export const actions: Actions = {
+	// 既存アカウントでログインして招待を受け入れる
 	accept: async ({ params, cookies }) => {
-		const state = generateState();
-		const codeVerifier = generateCodeVerifier();
+		const url = startOAuthFlow(params, cookies, false);
+		throw redirect(303, url);
+	},
 
-		const url = keycloak.createAuthorizationURL(state, codeVerifier, ['openid', 'profile', 'email']);
-
-		// Store state, verifier, and invitation token in cookies
-		cookies.set(STATE_COOKIE, state, {
-			path: '/',
-			httpOnly: true,
-			secure: !dev,
-			maxAge: 60 * 10,
-			sameSite: 'lax'
-		});
-
-		cookies.set(VERIFIER_COOKIE, codeVerifier, {
-			path: '/',
-			httpOnly: true,
-			secure: !dev,
-			maxAge: 60 * 10,
-			sameSite: 'lax'
-		});
-
-		// Store invitation token so we can process it after OAuth callback
-		cookies.set(INVITATION_COOKIE, params.token, {
-			path: '/',
-			httpOnly: true,
-			secure: !dev,
-			maxAge: 60 * 10,
-			sameSite: 'lax'
-		});
-
-		throw redirect(303, url.toString());
+	// 新規アカウントを作成して招待を受け入れる
+	register: async ({ params, cookies }) => {
+		const url = startOAuthFlow(params, cookies, true);
+		throw redirect(303, url);
 	}
 };

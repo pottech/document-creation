@@ -2,6 +2,11 @@
 	import { page } from '$app/stores';
 
 	let { children, data } = $props();
+
+	// ロール表示用のラベル変換
+	function getRoleLabel(role: string): string {
+		return role === 'hospital_admin' ? '管理者' : 'ユーザー';
+	}
 </script>
 
 <div class="admin-layout">
@@ -26,6 +31,25 @@
 				class:active={$page.url.pathname.startsWith('/admin/api-clients')}>APIクライアント</a
 			>
 		</div>
+
+		{#if data.userHospitals && data.userHospitals.length > 0}
+			<div class="nav-divider"></div>
+			<div class="user-hospitals-section" data-testid="user-hospitals-section">
+				<span class="section-title">所属病院</span>
+				<div class="hospital-links">
+					{#each data.userHospitals as hospital (hospital.hospitalId)}
+						<a
+							href="/{hospital.hospitalSlug}"
+							class="hospital-link"
+							data-testid="hospital-link"
+						>
+							<span class="hospital-name">{hospital.hospitalName}</span>
+							<span class="hospital-role">{getRoleLabel(hospital.role)}</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
 
 		<form method="POST" action="/auth/logout" class="logout-form">
 			<button type="submit" class="logout-btn">ログアウト</button>
@@ -134,5 +158,59 @@
 		padding: 2rem;
 		background: #f5f5f5;
 		overflow-y: auto;
+	}
+
+	.nav-divider {
+		height: 1px;
+		background: #333;
+		margin: 1rem 0;
+	}
+
+	.user-hospitals-section {
+		margin-bottom: 1rem;
+	}
+
+	.section-title {
+		display: block;
+		font-size: 0.75rem;
+		color: #888;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-bottom: 0.5rem;
+		padding: 0 0.5rem;
+	}
+
+	.hospital-links {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.hospital-link {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		color: #ccc;
+		text-decoration: none;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		transition: all 0.2s;
+	}
+
+	.hospital-link:hover {
+		background: #2d2d4a;
+		color: white;
+	}
+
+	.hospital-name {
+		font-size: 0.875rem;
+	}
+
+	.hospital-role {
+		font-size: 0.625rem;
+		padding: 0.125rem 0.375rem;
+		background: #3b3b5c;
+		border-radius: 3px;
+		color: #aaa;
 	}
 </style>

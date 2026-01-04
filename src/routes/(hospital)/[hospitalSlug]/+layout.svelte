@@ -178,6 +178,7 @@
 		overflow-y: auto;
 		overflow-x: hidden;
 		z-index: 50;
+		box-sizing: border-box;
 	}
 
 	.hospital-nav::before {

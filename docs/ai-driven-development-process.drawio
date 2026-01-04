@@ -1,0 +1,438 @@
+<mxfile host="65bd71144e">
+    <diagram name="AI駆動開発プロセス" id="ai-driven-development-process">
+        <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <!-- Title -->
+                <mxCell id="title" value="AI駆動開発プロセス (Claude Code + Multi-Agent)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#1a365d" parent="1" vertex="1">
+                    <mxGeometry x="450" y="20" width="700" height="40" as="geometry"/>
+                </mxCell>
+
+                <!-- Human Developer -->
+                <mxCell id="human" value="👤 Human Developer&#xa;（要求入力・承認・フィードバック）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;fontSize=14;fontStyle=1;strokeWidth=3" parent="1" vertex="1">
+                    <mxGeometry x="640" y="80" width="280" height="60" as="geometry"/>
+                </mxCell>
+
+                <!-- Main Agent Box -->
+                <mxCell id="main-agent-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3f51b5;strokeWidth=3;dashed=0" parent="1" vertex="1">
+                    <mxGeometry x="520" y="180" width="520" height="180" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="main-agent-title" value="🎯 Main Agent (Orchestrator)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#3f51b5" parent="1" vertex="1">
+                    <mxGeometry x="640" y="190" width="280" height="30" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="main-agent-role1" value="• フロー制御（状態管理・意思決定）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#1a237e" parent="1" vertex="1">
+                    <mxGeometry x="550" y="230" width="220" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="main-agent-role2" value="• Sub Agent起動・結果評価" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#1a237e" parent="1" vertex="1">
+                    <mxGeometry x="550" y="255" width="220" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="main-agent-role3" value="• TodoWriteでタスク管理" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#1a237e" parent="1" vertex="1">
+                    <mxGeometry x="550" y="280" width="220" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="main-agent-role4" value="• 人間への確認依頼判断" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#1a237e" parent="1" vertex="1">
+                    <mxGeometry x="550" y="305" width="220" height="25" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="main-agent-tools" value="Tools: Task, TodoWrite, AskUserQuestion, Bash" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#5c6bc0;fontStyle=2" parent="1" vertex="1">
+                    <mxGeometry x="800" y="260" width="220" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Arrow Human to Main -->
+                <mxCell id="arrow-human-main" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#c2185b;entryX=0.5;entryY=0;entryDx=0;entryDy=0" parent="1" source="human" target="main-agent-box" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arrow-human-main-label" value="機能要求" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#c2185b" parent="1" vertex="1">
+                    <mxGeometry x="795" y="155" width="60" height="20" as="geometry"/>
+                </mxCell>
+
+                <!-- Arrow Main to Human -->
+                <mxCell id="arrow-main-human" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#c2185b;dashed=1;exitX=0.2;exitY=0;exitDx=0;exitDy=0" parent="1" source="main-agent-box" target="human" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="160"/>
+                            <mxPoint x="700" y="160"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arrow-main-human-label" value="確認依頼" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#c2185b" parent="1" vertex="1">
+                    <mxGeometry x="620" y="155" width="60" height="20" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agents Section -->
+                <mxCell id="sub-agents-label" value="🤖 Specialized Sub Agents" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#2d3748" parent="1" vertex="1">
+                    <mxGeometry x="640" y="400" width="280" height="30" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 1: Spec Agent -->
+                <mxCell id="agent-spec" value="📋 Spec Agent&#xa;仕様書作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="80" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-spec-tools" value="Read, Glob, Grep, Write" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#64b5f6" parent="1" vertex="1">
+                    <mxGeometry x="80" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 2: E2E Scenario Agent -->
+                <mxCell id="agent-e2e-scenario" value="📝 E2E Scenario&#xa;Agent&#xa;シナリオ作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff9800;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="260" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-e2e-scenario-tools" value="Read, Glob, Write" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#ffb74d" parent="1" vertex="1">
+                    <mxGeometry x="260" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 3: Planning Agent -->
+                <mxCell id="agent-planning" value="🗓️ Planning Agent&#xa;計画・TODO作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="440" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-planning-tools" value="Read, Glob, TodoWrite" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#81c784" parent="1" vertex="1">
+                    <mxGeometry x="440" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 4: Test-First Agent -->
+                <mxCell id="agent-test-first" value="🧪 Test-First Agent&#xa;失敗テスト作成&#xa;(TDD: Red)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#f44336;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="620" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-test-first-tools" value="Read, Glob, Write, Bash" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#e57373" parent="1" vertex="1">
+                    <mxGeometry x="620" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 5: Implementation Agent -->
+                <mxCell id="agent-impl" value="💻 Implementation&#xa;Agent&#xa;(TDD: Green)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="800" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-impl-tools" value="Read, Edit, Write, Bash" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#66bb6a" parent="1" vertex="1">
+                    <mxGeometry x="800" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 6: Lint Fix Agent -->
+                <mxCell id="agent-lint" value="🔧 Lint Fix Agent&#xa;ESLint修正" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffc107;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="980" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-lint-tools" value="Bash, Read, Edit" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#ffd54f" parent="1" vertex="1">
+                    <mxGeometry x="980" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 7: Refactor Agent -->
+                <mxCell id="agent-refactor" value="♻️ Refactor Agent&#xa;コード改善&#xa;(TDD: Refactor)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#673ab7;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1160" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-refactor-tools" value="Read, Grep, Edit, Bash" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#9575cd" parent="1" vertex="1">
+                    <mxGeometry x="1160" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Sub Agent 8: E2E Test Agent -->
+                <mxCell id="agent-e2e-test" value="🎭 E2E Test Agent&#xa;E2Eテスト実行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f7fa;strokeColor=#00bcd4;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="450" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent-e2e-test-tools" value="Bash, Read, Glob" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#4dd0e1" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="510" width="140" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Arrows from Main Agent to Sub Agents -->
+                <mxCell id="arrow-main-spec" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5;exitX=0;exitY=1;exitDx=0;exitDy=0" parent="1" source="main-agent-box" target="agent-spec" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-e2e-scenario" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" source="main-agent-box" target="agent-e2e-scenario" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-planning" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" source="main-agent-box" target="agent-planning" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-test" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" source="main-agent-box" target="agent-test-first" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-impl" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" source="main-agent-box" target="agent-impl" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-lint" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" source="main-agent-box" target="agent-lint" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-refactor" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" source="main-agent-box" target="agent-refactor" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-main-e2e" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5;exitX=1;exitY=1;exitDx=0;exitDy=0" parent="1" source="main-agent-box" target="agent-e2e-test" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Workflow Section -->
+                <mxCell id="workflow-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#9e9e9e;strokeWidth=2;dashed=1" parent="1" vertex="1">
+                    <mxGeometry x="80" y="580" width="1400" height="400" as="geometry"/>
+                </mxCell>
+                <mxCell id="workflow-title" value="🔄 ワークフロー（開発サイクル）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#616161" parent="1" vertex="1">
+                    <mxGeometry x="100" y="590" width="250" height="25" as="geometry"/>
+                </mxCell>
+
+                <!-- Phase 1: Planning -->
+                <mxCell id="phase1-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=1;dashed=1" parent="1" vertex="1">
+                    <mxGeometry x="100" y="630" width="400" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="phase1-label" value="📋 Phase 1: 計画" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#1976d2" parent="1" vertex="1">
+                    <mxGeometry x="110" y="635" width="120" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step1" value="Spec作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="120" y="670" width="100" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step2" value="ユーザー承認" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;fontSize=10;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="240" y="660" width="80" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step3" value="E2Eシナリオ&#xa;+ 計画" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff9800;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="350" y="670" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf1-2" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#1976d2" parent="1" source="wf-step1" target="wf-step2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf2-3" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#4caf50" parent="1" source="wf-step2" target="wf-step3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-approve" value="承認" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#4caf50" parent="1" vertex="1">
+                    <mxGeometry x="320" y="650" width="30" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Phase 2: TDD Cycle -->
+                <mxCell id="phase2-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;strokeWidth=1;dashed=1" parent="1" vertex="1">
+                    <mxGeometry x="520" y="630" width="560" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="phase2-label" value="🔄 Phase 2: TDDサイクル" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#4caf50" parent="1" vertex="1">
+                    <mxGeometry x="530" y="635" width="180" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step4" value="失敗テスト&#xa;(Red)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#f44336;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="540" y="670" width="100" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step5" value="実装&#xa;(Green)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="680" y="670" width="100" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step6" value="テスト確認" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;fontSize=10;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="820" y="660" width="80" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step7" value="Lint修正" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffc107;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="940" y="670" width="100" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf3-4" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#f44336" parent="1" source="wf-step3" target="wf-step4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf4-5" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32" parent="1" source="wf-step4" target="wf-step5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf5-6" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#4caf50" parent="1" source="wf-step5" target="wf-step6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf6-7" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#ffc107" parent="1" source="wf-step6" target="wf-step7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-pass" value="Pass" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#4caf50" parent="1" vertex="1">
+                    <mxGeometry x="895" y="660" width="30" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- TDD Fail Loop -->
+                <mxCell id="arrow-wf6-fail" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#f44336;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0" parent="1" source="wf-step6" target="wf-step5" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="860" y="740"/>
+                            <mxPoint x="730" y="740"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="label-fail" value="Fail" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#f44336" parent="1" vertex="1">
+                    <mxGeometry x="865" y="718" width="30" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Phase 3: Quality -->
+                <mxCell id="phase3-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#673ab7;strokeWidth=1;dashed=1" parent="1" vertex="1">
+                    <mxGeometry x="100" y="780" width="560" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="phase3-label" value="✅ Phase 3: 品質保証" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#673ab7" parent="1" vertex="1">
+                    <mxGeometry x="110" y="785" width="150" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step8" value="リファクタ&#xa;(Refactor)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#673ab7;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="120" y="820" width="100" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step9" value="E2Eテスト" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f7fa;strokeColor=#00bcd4;fontSize=11;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="280" y="820" width="100" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-step10" value="E2E判定" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e0f7fa;strokeColor=#00bcd4;fontSize=10;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="440" y="810" width="80" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="wf-complete" value="✓ 完了" style="ellipse;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=12;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="560" y="820" width="80" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf7-8" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#673ab7;exitX=0.5;exitY=1;exitDx=0;exitDy=0" parent="1" source="wf-step7" target="wf-step8" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="990" y="770"/>
+                            <mxPoint x="170" y="770"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <mxCell id="arrow-wf8-9" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#00bcd4" parent="1" source="wf-step8" target="wf-step9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf9-10" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#00bcd4" parent="1" source="wf-step9" target="wf-step10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="arrow-wf10-complete" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2e7d32" parent="1" source="wf-step10" target="wf-complete" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="label-e2e-pass" value="Pass" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#2e7d32" parent="1" vertex="1">
+                    <mxGeometry x="520" y="810" width="30" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- E2E Fail Loop back to TDD -->
+                <mxCell id="arrow-e2e-fail" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#f44336;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0" parent="1" source="wf-step10" target="wf-step4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="480" y="900"/>
+                            <mxPoint x="60" y="900"/>
+                            <mxPoint x="60" y="690"/>
+                            <mxPoint x="540" y="690"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="label-e2e-fail" value="Fail → TDDへ" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#f44336" parent="1" vertex="1">
+                    <mxGeometry x="70" y="790" width="80" height="15" as="geometry"/>
+                </mxCell>
+
+                <!-- Escalation Box -->
+                <mxCell id="escalation-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;strokeWidth=1;dashed=1" parent="1" vertex="1">
+                    <mxGeometry x="700" y="780" width="340" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="escalation-title" value="⚠️ エスカレーション条件" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#c2185b" parent="1" vertex="1">
+                    <mxGeometry x="710" y="785" width="180" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="escalation-item1" value="• 繰り返し回数 > 5回" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#880e4f" parent="1" vertex="1">
+                    <mxGeometry x="720" y="810" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="escalation-item2" value="• 連続失敗 > 3回" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#880e4f" parent="1" vertex="1">
+                    <mxGeometry x="720" y="830" width="150" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="escalation-item3" value="• アーキテクチャ決定が必要" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#880e4f" parent="1" vertex="1">
+                    <mxGeometry x="720" y="850" width="180" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="escalation-item4" value="• セキュリティクリティカルな変更" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#880e4f" parent="1" vertex="1">
+                    <mxGeometry x="720" y="870" width="200" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="escalation-action" value="→ Human Developer&#xa;へ相談" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c2185b;strokeColor=#880e4f;fontColor=#ffffff;fontSize=11;fontStyle=1;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="920" y="830" width="100" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Legend -->
+                <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#9e9e9e;strokeWidth=1" parent="1" vertex="1">
+                    <mxGeometry x="1100" y="780" width="360" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend-title" value="凡例" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1115" y="785" width="50" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend1-box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3f51b5;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1115" y="810" width="20" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend1-text" value="Main Agent (Orchestrator)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="807" width="150" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend2-box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#f44336;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1115" y="833" width="20" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend2-text" value="TDD Red (テスト作成)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="830" width="150" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend3-box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1115" y="856" width="20" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend3-text" value="TDD Green (実装)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="853" width="150" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend4-box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#673ab7;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1115" y="879" width="20" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend4-text" value="TDD Refactor (改善)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="876" width="150" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend5-box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;strokeWidth=2" parent="1" vertex="1">
+                    <mxGeometry x="1115" y="902" width="20" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend5-text" value="Human Interaction" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="899" width="150" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend6-line" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#f44336;dashed=1" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1300" y="817" as="sourcePoint"/>
+                        <mxPoint x="1340" y="817" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="legend6-text" value="失敗時ループ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1350" y="807" width="90" height="20" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="legend7-line" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#3f51b5" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1300" y="840" as="sourcePoint"/>
+                        <mxPoint x="1340" y="840" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="legend7-text" value="Sub Agent呼び出し" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="1350" y="830" width="100" height="20" as="geometry"/>
+                </mxCell>
+
+                <!-- Quality Metrics Box -->
+                <mxCell id="metrics-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;strokeWidth=1" parent="1" vertex="1">
+                    <mxGeometry x="1100" y="630" width="360" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics-title" value="📊 品質メトリクス (成功基準)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#2e7d32" parent="1" vertex="1">
+                    <mxGeometry x="1110" y="635" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics-item1" value="✓ Unit Test Coverage ≥ 80%" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1b5e20" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="660" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics-item2" value="✓ Lint Errors = 0" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1b5e20" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="680" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics-item3" value="✓ E2E Tests Pass Rate = 100%" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1b5e20" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="700" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics-item4" value="✓ Build Success" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1b5e20" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="720" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics-item5" value="✓ Cyclomatic Complexity &lt; 10" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1b5e20" parent="1" vertex="1">
+                    <mxGeometry x="1120" y="740" width="200" height="20" as="geometry"/>
+                </mxCell>
+
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
