@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { apiClients, hospitals, users, type ApiClient, type NewApiClient } from '$lib/server/db/schema';
+import { apiClients, hospitals, users, type ApiClient } from '$lib/server/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import {
 	createKeycloakClient,

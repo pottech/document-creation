@@ -6,9 +6,7 @@ import { getPatients, createPatient, deletePatient } from '$lib/server/repositor
 import { getCarePlansByPatient } from '$lib/server/repositories/care-plans';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, url }) => {
-	const parentData = await parent();
-
+export const load: PageServerLoad = async ({ params, url }) => {
 	const [hospital] = await db
 		.select()
 		.from(hospitals)
@@ -85,8 +83,8 @@ export const actions: Actions = {
 			});
 
 			return { success: true, patient };
-		} catch (e) {
-			if (e instanceof Error && e.message === 'Patient number already exists') {
+		} catch (err) {
+			if (err instanceof Error && err.message === 'Patient number already exists') {
 				return fail(400, { error: 'この患者番号は既に登録されています' });
 			}
 			return fail(500, { error: '患者の登録に失敗しました' });
@@ -114,7 +112,7 @@ export const actions: Actions = {
 		try {
 			await deletePatient(patientId);
 			return { success: true };
-		} catch (e) {
+		} catch {
 			return fail(500, { error: '患者の削除に失敗しました' });
 		}
 	}

@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { patients, type Patient, type NewPatient, type Gender } from '$lib/server/db/schema';
+import { patients, type Patient, type Gender } from '$lib/server/db/schema';
 import { eq, and, ilike, or, desc, sql } from 'drizzle-orm';
 
 interface GetPatientsOptions {
@@ -141,10 +141,7 @@ export async function updatePatient(id: string, params: UpdatePatientParams): Pr
  * 患者を削除
  */
 export async function deletePatient(id: string): Promise<void> {
-	const result = await db.delete(patients).where(eq(patients.id, id));
-
-	// Note: Drizzle doesn't return affected rows count easily,
-	// so we check existence separately if needed
+	await db.delete(patients).where(eq(patients.id, id));
 }
 
 /**

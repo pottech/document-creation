@@ -6,6 +6,8 @@
 
 	let showCreateModal = $state(false);
 	let createError = $state('');
+	// 初期値としてURL検索パラメータを使用（ユーザー入力用のため$stateで管理）
+	// svelte-ignore state_referenced_locally
 	let searchQuery = $state(data.search || '');
 
 	const genderLabels: Record<string, string> = {
@@ -116,7 +118,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each data.patients as patient, i}
+						{#each data.patients as patient, i (patient.id)}
 							<tr style="animation-delay: {i * 0.03}s">
 								<td>
 									<span class="patient-number">{patient.patientNumber}</span>
@@ -204,6 +206,7 @@
 </div>
 
 {#if showCreateModal}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div class="modal-overlay" onclick={() => (showCreateModal = false)}>
 		<div class="modal" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
@@ -216,7 +219,7 @@
 					</svg>
 					患者を登録
 				</h3>
-				<button class="close-btn" onclick={() => (showCreateModal = false)}>
+				<button class="close-btn" onclick={() => (showCreateModal = false)} aria-label="閉じる">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<line x1="18" y1="6" x2="6" y2="18" />
 						<line x1="6" y1="6" x2="18" y2="18" />

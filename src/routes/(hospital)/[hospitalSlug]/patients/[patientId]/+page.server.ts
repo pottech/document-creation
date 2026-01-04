@@ -6,9 +6,7 @@ import { getPatientById, updatePatient, isPatientInHospital } from '$lib/server/
 import { getCarePlansByPatient } from '$lib/server/repositories/care-plans';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent }) => {
-	const parentData = await parent();
-
+export const load: PageServerLoad = async ({ params }) => {
 	const [hospital] = await db
 		.select()
 		.from(hospitals)
@@ -75,7 +73,7 @@ export const actions: Actions = {
 			});
 
 			return { success: true, patient };
-		} catch (e) {
+		} catch {
 			return fail(500, { error: '患者情報の更新に失敗しました' });
 		}
 	}

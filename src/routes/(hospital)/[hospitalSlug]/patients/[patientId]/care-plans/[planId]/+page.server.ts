@@ -7,9 +7,7 @@ import { getPatientById, isPatientInHospital } from '$lib/server/repositories/pa
 import { logAudit } from '$lib/server/services/audit-service';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, locals }) => {
-	const parentData = await parent();
-
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const [hospital] = await db
 		.select()
 		.from(hospitals)

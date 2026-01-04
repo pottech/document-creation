@@ -1,7 +1,14 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { hospitals, users, hospitalMemberships } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import {
+	hospitals,
+	users,
+	hospitalMemberships,
+	type NutritionStatus,
+	type BloodGlucoseCondition,
+	type GuidanceArea
+} from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 import { getPatientById, isPatientInHospital } from '$lib/server/repositories/patients';
 import {
 	getLatestCarePlan,
@@ -13,9 +20,7 @@ import {
 import { logAudit } from '$lib/server/services/audit-service';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, locals }) => {
-	const parentData = await parent();
-
+export const load: PageServerLoad = async ({ params }) => {
 	const [hospital] = await db
 		.select()
 		.from(hospitals)
@@ -257,12 +262,12 @@ export const actions: Actions = {
 				bmi,
 				waistCurrent,
 				waistTarget,
-				nutritionStatus: nutritionStatus as any,
+				nutritionStatus: nutritionStatus as NutritionStatus | null,
 				bloodPressureSystolic: bloodPressureSystolic ? parseInt(bloodPressureSystolic, 10) : null,
 				bloodPressureDiastolic: bloodPressureDiastolic ? parseInt(bloodPressureDiastolic, 10) : null,
 				hasExerciseEcg,
 				bloodTestDate,
-				bloodGlucoseCondition: bloodGlucoseCondition as any,
+				bloodGlucoseCondition: bloodGlucoseCondition as BloodGlucoseCondition | null,
 				bloodGlucosePostMealHours: bloodGlucosePostMealHours
 					? parseInt(bloodGlucosePostMealHours, 10)
 					: null,
@@ -299,7 +304,7 @@ export const actions: Actions = {
 			const carePlan = await createCarePlan(carePlanData);
 
 			// 担当者を設定
-			const staffEntries: Array<{ userId: string; guidanceArea: any; displayOrder: number }> = [];
+			const staffEntries: Array<{ userId: string; guidanceArea: GuidanceArea; displayOrder: number }> = [];
 
 			// 各領域の担当者を取得
 			const areas = ['diet', 'exercise', 'smoking', 'other', 'medication'] as const;

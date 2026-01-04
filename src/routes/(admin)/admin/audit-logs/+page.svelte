@@ -58,7 +58,7 @@
 					<label for="hospitalId">病院</label>
 					<select name="hospitalId" id="hospitalId" value={data.filters.hospitalId || ''}>
 						<option value="">すべて</option>
-						{#each data.hospitalList as hospital}
+						{#each data.hospitalList as hospital (hospital.id)}
 							<option value={hospital.id}>{hospital.name}</option>
 						{/each}
 					</select>
@@ -68,7 +68,7 @@
 					<label for="userId">ユーザー</label>
 					<select name="userId" id="userId" value={data.filters.userId || ''}>
 						<option value="">すべて</option>
-						{#each data.userList as user}
+						{#each data.userList as user (user.id)}
 							<option value={user.id}>{user.name || user.email}</option>
 						{/each}
 					</select>
@@ -78,7 +78,7 @@
 					<label for="action">操作種別</label>
 					<select name="action" id="action" value={data.filters.action || ''}>
 						<option value="">すべて</option>
-						{#each Object.entries(data.actionLabels) as [value, label]}
+						{#each Object.entries(data.actionLabels) as [value, label] (value)}
 							<option {value}>{label}</option>
 						{/each}
 					</select>
@@ -88,7 +88,7 @@
 					<label for="targetType">対象種別</label>
 					<select name="targetType" id="targetType" value={data.filters.targetType || ''}>
 						<option value="">すべて</option>
-						{#each Object.entries(data.targetTypeLabels) as [value, label]}
+						{#each Object.entries(data.targetTypeLabels) as [value, label] (value)}
 							<option {value}>{label}</option>
 						{/each}
 					</select>
@@ -132,7 +132,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each data.logs as log}
+				{#each data.logs as log (log.id)}
 					<tr class:error={!log.success}>
 						<td class="date-cell">{formatDate(log.createdAt)}</td>
 						<td>
@@ -188,7 +188,7 @@
 			{#each Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
 				const start = Math.max(1, data.page - 2);
 				return start + i;
-			}).filter((p) => p <= data.totalPages) as pageNum}
+			}).filter((p) => p <= data.totalPages) as pageNum (pageNum)}
 				<button
 					class="btn-page"
 					class:active={pageNum === data.page}

@@ -9,8 +9,7 @@ import {
 } from '$lib/server/repositories/care-plans';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent, url }) => {
-	const parentData = await parent();
+export const load: PageServerLoad = async ({ params, url }) => {
 
 	const [hospital] = await db
 		.select()

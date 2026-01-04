@@ -120,13 +120,13 @@
 	<div class="content-grid">
 		<div class="calendar-section">
 			<div class="calendar-header">
-				<button class="nav-btn" onclick={() => changeMonth(-1)}>
+				<button class="nav-btn" onclick={() => changeMonth(-1)} aria-label="前月">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<polyline points="15 18 9 12 15 6" />
 					</svg>
 				</button>
 				<span class="month-title">{data.year}年{data.month}月</span>
-				<button class="nav-btn" onclick={() => changeMonth(1)}>
+				<button class="nav-btn" onclick={() => changeMonth(1)} aria-label="翌月">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<polyline points="9 18 15 12 9 6" />
 					</svg>
@@ -136,15 +136,15 @@
 			<table class="calendar">
 				<thead>
 					<tr>
-						{#each weekDays as day, i}
+						{#each weekDays as day, i (i)}
 							<th class:sunday={i === 0} class:saturday={i === 6}>{day}</th>
 						{/each}
 					</tr>
 				</thead>
 				<tbody>
-					{#each calendar as week}
+					{#each calendar as week, weekIdx (weekIdx)}
 						<tr>
-							{#each week as day, i}
+							{#each week as day, i (i)}
 								<td class:sunday={i === 0} class:saturday={i === 6}>
 									{#if day}
 										{@const count = getCountForDay(day)}
@@ -183,7 +183,7 @@
 						<span class="summary-value">{data.stats.total}</span>
 						<span class="summary-label">作成件数</span>
 					</div>
-					{#each data.stats.byDisease as disease}
+					{#each data.stats.byDisease as disease (disease.disease)}
 						<div class="summary-item">
 							<span class="summary-value">{disease.count}</span>
 							<span class="summary-label">
@@ -223,7 +223,7 @@
 				</div>
 			{:else}
 				<div class="care-plan-list">
-					{#each data.carePlans as plan, i}
+					{#each data.carePlans as plan, i (plan.id)}
 						<a href="/{data.hospital?.slug}/patients/{plan.patient.id}/care-plans/{plan.id}" class="care-plan-card" style="animation-delay: {i * 0.05}s">
 							<div class="card-left">
 								<div class="patient-avatar">

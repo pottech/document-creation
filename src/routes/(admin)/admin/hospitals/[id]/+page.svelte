@@ -26,7 +26,7 @@
 				<p class="empty">メンバーがいません</p>
 			{:else}
 				<ul class="member-list">
-					{#each data.members as member}
+					{#each data.members as member (member.user.id)}
 						<li class="member-item">
 							<div class="member-info">
 								<span class="member-name">{member.user.name}</span>
@@ -46,7 +46,7 @@
 				<p class="empty">保留中の招待はありません</p>
 			{:else}
 				<ul class="invitation-list">
-					{#each data.invitations as invitation}
+					{#each data.invitations as invitation (invitation.id)}
 						<li class="invitation-item">
 							<div class="invitation-info">
 								<span class="invitation-email">{invitation.email}</span>

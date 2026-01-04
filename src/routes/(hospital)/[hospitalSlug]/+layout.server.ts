@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { updateSessionHospital } from '$lib/server/auth/session';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ params, locals, cookies }) => {
+export const load: LayoutServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
 		throw redirect(303, '/login');
 	}

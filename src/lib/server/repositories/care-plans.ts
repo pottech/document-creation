@@ -6,8 +6,6 @@ import {
 	users,
 	type CarePlan,
 	type NewCarePlan,
-	type CarePlanStaff,
-	type NewCarePlanStaff,
 	type PlanType,
 	type PlanStatus,
 	type GuidanceArea

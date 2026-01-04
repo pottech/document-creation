@@ -26,7 +26,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.hospitals as hospital}
+					{#each data.hospitals as hospital (hospital.id)}
 						<tr>
 							<td>{hospital.name}</td>
 							<td><code>{hospital.slug}</code></td>

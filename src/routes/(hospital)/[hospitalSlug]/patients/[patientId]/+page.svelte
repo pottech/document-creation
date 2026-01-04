@@ -175,7 +175,7 @@
 			</div>
 		{:else}
 			<div class="care-plan-list">
-				{#each data.carePlans as plan}
+				{#each data.carePlans as plan (plan.id)}
 					<div class="care-plan-item">
 						<div class="care-plan-header">
 							<div class="care-plan-type">

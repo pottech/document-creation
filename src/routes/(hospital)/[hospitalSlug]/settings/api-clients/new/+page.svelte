@@ -28,17 +28,17 @@
 
 			<div class="credentials">
 				<div class="credential-item">
-					<label>Client ID</label>
+					<label for="clientId">Client ID</label>
 					<div class="credential-value">
-						<code>{form.clientId}</code>
+						<code id="clientId">{form.clientId}</code>
 						<button type="button" onclick={() => copyToClipboard(form.clientId)}>コピー</button>
 					</div>
 				</div>
 
 				<div class="credential-item">
-					<label>Client Secret</label>
+					<label for="clientSecret">Client Secret</label>
 					<div class="credential-value">
-						<code class="secret">{form.clientSecret}</code>
+						<code id="clientSecret" class="secret">{form.clientSecret}</code>
 						<button type="button" onclick={() => copyToClipboard(form.clientSecret)}>コピー</button>
 					</div>
 				</div>

@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { hospitals } from '$lib/server/db/schema';
 import { createApiClient } from '$lib/server/repositories/api-clients';

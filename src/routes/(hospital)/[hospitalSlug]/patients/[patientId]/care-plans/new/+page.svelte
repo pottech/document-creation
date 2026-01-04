@@ -8,13 +8,16 @@
 	let isSubmitting = $state(false);
 
 	// フォーム状態
-	let planType = $state<"initial" | "continuous">(
-		data.isInitial ? "initial" : "continuous",
-	);
-	let sequenceNumber = $state(data.carePlanCount + 1);
+	let planType = $state<"initial" | "continuous">("initial");
+	let sequenceNumber = $state(1);
+
+	$effect(() => {
+		planType = data.isInitial ? "initial" : "continuous";
+		sequenceNumber = data.carePlanCount + 1;
+	});
 
 	// 前回データからの初期値
-	const prevPlan = data.latestCarePlan;
+	const prevPlan = $derived(data.latestCarePlan);
 
 	const tabs = [
 		"基本情報",
@@ -83,7 +86,7 @@
 
 	<!-- タブナビゲーション -->
 	<div class="tabs">
-		{#each tabs as tab, i}
+		{#each tabs as tab, i (i)}
 			{@const icon = [
 				"person",
 				"medical_information",
@@ -628,7 +631,7 @@
 						<label for="staff_diet">担当者</label>
 						<select id="staff_diet" name="staff_diet">
 							<option value="">選択してください</option>
-							{#each data.staffMembers as staff}
+							{#each data.staffMembers as staff (staff.id)}
 								<option value={staff.id}>{staff.name}</option>
 							{/each}
 						</select>
@@ -742,7 +745,7 @@
 						<label for="staff_exercise">担当者</label>
 						<select id="staff_exercise" name="staff_exercise">
 							<option value="">選択してください</option>
-							{#each data.staffMembers as staff}
+							{#each data.staffMembers as staff (staff.id)}
 								<option value={staff.id}>{staff.name}</option>
 							{/each}
 						</select>
@@ -777,7 +780,7 @@
 						<label for="staff_smoking">担当者</label>
 						<select id="staff_smoking" name="staff_smoking">
 							<option value="">選択してください</option>
-							{#each data.staffMembers as staff}
+							{#each data.staffMembers as staff (staff.id)}
 								<option value={staff.id}>{staff.name}</option>
 							{/each}
 						</select>
@@ -824,7 +827,7 @@
 						<label for="staff_other">担当者</label>
 						<select id="staff_other" name="staff_other">
 							<option value="">選択してください</option>
-							{#each data.staffMembers as staff}
+							{#each data.staffMembers as staff (staff.id)}
 								<option value={staff.id}>{staff.name}</option>
 							{/each}
 						</select>
@@ -850,7 +853,7 @@
 						<label for="staff_medication">担当者</label>
 						<select id="staff_medication" name="staff_medication">
 							<option value="">選択してください</option>
-							{#each data.staffMembers as staff}
+							{#each data.staffMembers as staff (staff.id)}
 								<option value={staff.id}>{staff.name}</option>
 							{/each}
 						</select>
@@ -902,7 +905,7 @@
 							<label for="primaryDoctorId">医師（上段）</label>
 							<select id="primaryDoctorId" name="primaryDoctorId">
 								<option value="">選択してください</option>
-								{#each data.staffMembers as staff}
+								{#each data.staffMembers as staff (staff.id)}
 									<option value={staff.id}
 										>{staff.name}</option
 									>
@@ -916,7 +919,7 @@
 								name="secondaryDoctorId"
 							>
 								<option value="">選択してください</option>
-								{#each data.staffMembers as staff}
+								{#each data.staffMembers as staff (staff.id)}
 									<option value={staff.id}
 										>{staff.name}</option
 									>
@@ -1108,24 +1111,6 @@
 	.tab.active {
 		background: var(--md-sys-color-primary-container);
 		color: var(--md-sys-color-on-primary-container);
-	}
-
-	.tab-number {
-		width: 24px;
-		height: 24px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--md-sys-color-outline);
-		color: white;
-		border-radius: 50%;
-		font-size: 0.75rem;
-		font-weight: 600;
-		transition: background 0.2s;
-	}
-
-	.tab.active .tab-number {
-		background: var(--md-sys-color-primary);
 	}
 
 	.tab-label {

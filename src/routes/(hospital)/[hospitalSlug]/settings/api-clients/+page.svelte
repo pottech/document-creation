@@ -28,7 +28,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.clients as client}
+					{#each data.clients as client (client.id)}
 						<tr>
 							<td>
 								<div class="client-name">{client.name}</div>

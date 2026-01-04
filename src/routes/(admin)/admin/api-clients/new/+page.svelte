@@ -3,6 +3,8 @@
 
 	let { data, form } = $props();
 
+	// フォームエラー時の値を初期値として使用（ユーザー選択用のため$stateで管理）
+	// svelte-ignore state_referenced_locally
 	let scope = $state(form?.values?.scope ?? 'hospital');
 	let copied = $state(false);
 
@@ -27,17 +29,17 @@
 
 			<div class="credentials">
 				<div class="credential-item">
-					<label>Client ID</label>
+					<label for="clientId">Client ID</label>
 					<div class="credential-value">
-						<code>{form.clientId}</code>
+						<code id="clientId">{form.clientId}</code>
 						<button type="button" onclick={() => copyToClipboard(form.clientId)}>コピー</button>
 					</div>
 				</div>
 
 				<div class="credential-item">
-					<label>Client Secret</label>
+					<label for="clientSecret">Client Secret</label>
 					<div class="credential-value">
-						<code class="secret">{form.clientSecret}</code>
+						<code id="clientSecret" class="secret">{form.clientSecret}</code>
 						<button type="button" onclick={() => copyToClipboard(form.clientSecret)}>コピー</button>
 					</div>
 				</div>
@@ -87,9 +89,9 @@
 			<div class="form-section">
 				<h2>スコープ設定</h2>
 
-				<div class="form-group">
-					<label>アクセス範囲 <span class="required">*</span></label>
-
+				<fieldset class="form-group">
+					<legend>アクセス範囲 <span class="required">*</span></legend>
+	
 					<div class="radio-group">
 						<label class="radio-option">
 							<input
@@ -104,7 +106,7 @@
 								<span class="radio-description">特定の病院のデータのみアクセス可能</span>
 							</span>
 						</label>
-
+	
 						<label class="radio-option">
 							<input
 								type="radio"
@@ -119,14 +121,14 @@
 							</span>
 						</label>
 					</div>
-				</div>
+				</fieldset>
 
 				{#if scope === 'hospital'}
 					<div class="form-group">
 						<label for="hospitalId">病院 <span class="required">*</span></label>
 						<select id="hospitalId" name="hospitalId" required>
 							<option value="">病院を選択してください</option>
-							{#each data.hospitals as hospital}
+							{#each data.hospitals as hospital (hospital.id)}
 								<option value={hospital.id} selected={form?.values?.hospitalId === hospital.id}>
 									{hospital.name}
 								</option>

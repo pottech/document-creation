@@ -12,7 +12,7 @@
 import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { eq, like, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import * as schema from '../src/lib/server/db/schema';
 
 const DATABASE_URL = process.env.DATABASE_URL;

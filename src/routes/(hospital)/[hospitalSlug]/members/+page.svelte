@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-
 	let { data } = $props();
 
 	const roleLabels: Record<string, string> = {
@@ -54,7 +52,7 @@
 			</div>
 		{:else}
 			<div class="member-grid">
-				{#each data.members as member, i}
+				{#each data.members as member, i (member.user.id)}
 					<div class="member-card" style="animation-delay: {i * 0.05}s">
 						<div class="member-avatar">
 							{member.user.name?.charAt(0) || 'U'}
@@ -106,7 +104,7 @@
 			</div>
 		{:else}
 			<div class="invitation-list">
-				{#each data.invitations as invitation, i}
+				{#each data.invitations as invitation, i (invitation.id)}
 					<div class="invitation-card" style="animation-delay: {i * 0.05}s">
 						<div class="invitation-icon">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

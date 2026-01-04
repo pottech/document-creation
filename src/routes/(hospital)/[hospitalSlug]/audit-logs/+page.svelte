@@ -71,7 +71,7 @@
 					</label>
 					<select name="userId" id="userId" value={data.filters.userId || ''}>
 						<option value="">すべて</option>
-						{#each data.userList as user}
+						{#each data.userList as user (user.id)}
 							<option value={user.id}>{user.name || user.email}</option>
 						{/each}
 					</select>
@@ -87,7 +87,7 @@
 					</label>
 					<select name="action" id="action" value={data.filters.action || ''}>
 						<option value="">すべて</option>
-						{#each Object.entries(data.actionLabels) as [value, label]}
+						{#each Object.entries(data.actionLabels) as [value, label] (value)}
 							<option {value}>{label}</option>
 						{/each}
 					</select>
@@ -104,7 +104,7 @@
 					</label>
 					<select name="targetType" id="targetType" value={data.filters.targetType || ''}>
 						<option value="">すべて</option>
-						{#each Object.entries(data.targetTypeLabels) as [value, label]}
+						{#each Object.entries(data.targetTypeLabels) as [value, label] (value)}
 							<option {value}>{label}</option>
 						{/each}
 					</select>
@@ -182,7 +182,7 @@
 			</div>
 		{:else}
 			<div class="log-list">
-				{#each data.logs as log, i}
+				{#each data.logs as log, i (log.id)}
 					<div class="log-card" class:error={!log.success} style="animation-delay: {i * 0.02}s">
 						<div class="log-icon" class:success={log.success} class:failure={!log.success}>
 							{#if log.success}
@@ -216,7 +216,7 @@
 								{log.userName}
 							</div>
 						</div>
-						<button class="btn-detail" onclick={() => showDetails(log)}>
+						<button class="btn-detail" onclick={() => showDetails(log)} aria-label="詳細を表示">
 							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 								<circle cx="12" cy="12" r="10" />
 								<line x1="12" y1="16" x2="12" y2="12" />
@@ -244,7 +244,7 @@
 						{#each Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
 							const start = Math.max(1, data.page - 2);
 							return start + i;
-						}).filter((p) => p <= data.totalPages) as pageNum}
+						}).filter((p) => p <= data.totalPages) as pageNum (pageNum)}
 							<button
 								class="page-num"
 								class:active={pageNum === data.page}
@@ -272,6 +272,7 @@
 </div>
 
 {#if showDetailModal && selectedLog}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div class="modal-overlay" onclick={() => (showDetailModal = false)}>
 		<div class="modal" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
@@ -283,7 +284,7 @@
 					</svg>
 					操作詳細
 				</h3>
-				<button class="close-btn" onclick={() => (showDetailModal = false)}>
+				<button class="close-btn" onclick={() => (showDetailModal = false)} aria-label="閉じる">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<line x1="18" y1="6" x2="6" y2="18" />
 						<line x1="6" y1="6" x2="18" y2="18" />
