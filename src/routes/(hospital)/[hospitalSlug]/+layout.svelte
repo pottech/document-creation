@@ -5,6 +5,23 @@
 
 	const currentPath = $derived($page.url.pathname);
 	const basePath = $derived(`/${data.hospital?.slug}`);
+
+	// Mobile sidebar state
+	let isSidebarOpen = $state(false);
+
+	function toggleSidebar() {
+		isSidebarOpen = !isSidebarOpen;
+	}
+
+	function closeSidebar() {
+		isSidebarOpen = false;
+	}
+
+	// Close sidebar when route changes
+	$effect(() => {
+		currentPath;
+		isSidebarOpen = false;
+	});
 </script>
 
 <svelte:head>
@@ -17,7 +34,35 @@
 </svelte:head>
 
 <div class="hospital-layout">
-	<nav class="hospital-nav">
+	<!-- Mobile Header -->
+	<header class="mobile-header">
+		<button class="hamburger-btn" onclick={toggleSidebar} aria-label="メニューを開く">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				{#if isSidebarOpen}
+					<line x1="18" y1="6" x2="6" y2="18" />
+					<line x1="6" y1="6" x2="18" y2="18" />
+				{:else}
+					<line x1="3" y1="6" x2="21" y2="6" />
+					<line x1="3" y1="12" x2="21" y2="12" />
+					<line x1="3" y1="18" x2="21" y2="18" />
+				{/if}
+			</svg>
+		</button>
+		<div class="mobile-header-info">
+			<span class="mobile-hospital-name">{data.hospital?.name}</span>
+		</div>
+		<div class="mobile-user-avatar">
+			{data.user?.name?.charAt(0) || 'U'}
+		</div>
+	</header>
+
+	<!-- Overlay for mobile -->
+	{#if isSidebarOpen}
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="sidebar-overlay" onclick={closeSidebar}></div>
+	{/if}
+
+	<nav class="hospital-nav" class:open={isSidebarOpen}>
 		<div class="nav-header">
 			<div class="hospital-icon">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,6 +208,84 @@
 		background: linear-gradient(135deg, #f0f4f8 0%, #e8eef5 100%);
 	}
 
+	/* Mobile Header - Hidden on desktop */
+	.mobile-header {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 60px;
+		background: linear-gradient(180deg, #0f4c5c 0%, #0a3642 100%);
+		color: white;
+		padding: 0 1rem;
+		align-items: center;
+		justify-content: space-between;
+		z-index: 100;
+		box-shadow: 0 2px 12px rgba(15, 76, 92, 0.2);
+	}
+
+	.hamburger-btn {
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.1);
+		border: none;
+		border-radius: 10px;
+		color: white;
+		cursor: pointer;
+		transition: background 0.2s ease;
+	}
+
+	.hamburger-btn:hover {
+		background: rgba(255, 255, 255, 0.15);
+	}
+
+	.mobile-header-info {
+		flex: 1;
+		text-align: center;
+		min-width: 0;
+	}
+
+	.mobile-hospital-name {
+		font-weight: 600;
+		font-size: 0.9375rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: block;
+	}
+
+	.mobile-user-avatar {
+		width: 36px;
+		height: 36px;
+		background: linear-gradient(135deg, #9ae6d8 0%, #5dd9c1 100%);
+		border-radius: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 0.875rem;
+		color: #0a3642;
+	}
+
+	/* Sidebar Overlay - Mobile only */
+	.sidebar-overlay {
+		display: none;
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+		z-index: 150;
+		animation: fadeIn 0.2s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
 	.hospital-nav {
 		width: 280px;
 		min-width: 280px;
@@ -177,7 +300,7 @@
 		box-shadow: 4px 0 24px rgba(15, 76, 92, 0.15);
 		overflow-y: auto;
 		overflow-x: hidden;
-		z-index: 50;
+		z-index: 200;
 		box-sizing: border-box;
 	}
 
@@ -205,6 +328,7 @@
 	.hospital-icon {
 		width: 44px;
 		height: 44px;
+		min-width: 44px;
 		background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
 		border-radius: 12px;
 		display: flex;
@@ -217,12 +341,16 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.375rem;
+		min-width: 0;
 	}
 
 	.hospital-name {
 		font-size: 1rem;
 		font-weight: 600;
 		letter-spacing: -0.01em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.admin-badge {
@@ -256,6 +384,7 @@
 	.user-avatar {
 		width: 40px;
 		height: 40px;
+		min-width: 40px;
 		background: linear-gradient(135deg, #9ae6d8 0%, #5dd9c1 100%);
 		border-radius: 10px;
 		display: flex;
@@ -270,11 +399,15 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+		min-width: 0;
 	}
 
 	.user-name {
 		font-weight: 500;
 		font-size: 0.875rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.user-email {
@@ -376,6 +509,11 @@
 		margin: 0 auto;
 	}
 
+	/* ============================================
+	   RESPONSIVE DESIGN
+	   ============================================ */
+
+	/* Large Tablet (1024px and below) */
 	@media (max-width: 1024px) {
 		.hospital-nav {
 			width: 240px;
@@ -384,6 +522,101 @@
 
 		.main-content {
 			padding: 1.5rem;
+		}
+	}
+
+	/* Tablet (768px and below) - Sidebar becomes drawer */
+	@media (max-width: 768px) {
+		.mobile-header {
+			display: flex;
+		}
+
+		.sidebar-overlay {
+			display: block;
+		}
+
+		.hospital-layout {
+			flex-direction: column;
+		}
+
+		.hospital-nav {
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 100vh;
+			width: 280px;
+			min-width: 280px;
+			transform: translateX(-100%);
+			transition: transform 0.3s ease;
+			padding-top: 1.5rem;
+		}
+
+		.hospital-nav.open {
+			transform: translateX(0);
+		}
+
+		.hospital-main {
+			min-height: calc(100vh - 60px);
+			margin-top: 60px;
+		}
+
+		.main-content {
+			padding: 1rem;
+		}
+	}
+
+	/* Mobile (480px and below) */
+	@media (max-width: 480px) {
+		.hospital-nav {
+			width: 85vw;
+			max-width: 300px;
+			min-width: auto;
+		}
+
+		.main-content {
+			padding: 0.75rem;
+		}
+
+		.nav-header {
+			padding-bottom: 1rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.hospital-icon {
+			width: 38px;
+			height: 38px;
+			min-width: 38px;
+		}
+
+		.hospital-icon svg {
+			width: 20px;
+			height: 20px;
+		}
+
+		.hospital-name {
+			font-size: 0.9375rem;
+		}
+
+		.nav-user {
+			padding: 0.75rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.user-avatar {
+			width: 36px;
+			height: 36px;
+			min-width: 36px;
+			font-size: 0.875rem;
+		}
+
+		.nav-links a {
+			padding: 0.625rem 0.75rem;
+			font-size: 0.875rem;
+		}
+
+		.logout-btn {
+			padding: 0.75rem;
+			font-size: 0.875rem;
 		}
 	}
 </style>
